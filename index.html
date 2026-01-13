@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ABClock Online - Obariv</title>
+    <style>
+        /* Стилізація згідно з activity_main.xml та MainActivity.kt */
+        :root {
+            --bg-color: #1a1a2e;
+            --text-primary: #ffffff;
+            --text-secondary: #e0e0e0;
+            --time-color: #00d9ff;
+            --lesson-bg: #3d5187;
+            --lesson-active: #049715;
+            --break-active: #a68f14;
+            --title-bg: rgba(0, 0, 0, 0.4);
+        }
+
+        body {
+            margin: 0;
+            padding: 20px 14px;
+            background-color: var(--bg-color);
+            color: var(--text-primary);
+            font-family: 'Segoe UI', Roboto, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            box-sizing: border-box;
+            overflow-x: hidden;
+        }
+
+        #schoolTitle {
+            font-size: 24px;
+            margin-top: 20px;
+            margin-bottom: 20px;
+            text-align: center;
+            font-weight: 500;
+        }
+
+        .logo-container {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-top: 10px;
+            min-height: 120px;
+        }
+
+        #schoolLogo {
+            max-height: 150px;
+            max-width: 150px;
+            object-fit: contain;
+        }
+
+        .clock-block {
+            flex: 1.8;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            margin-top: 20px;
+        }
+
+        #timeTextView {
+            font-size: 80px;
+            color: var(--time-color);
+            background-color: var(--title-bg);
+            padding: 10px 40px;
+            border-radius: 100px;
+            font-weight: 500;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.5);
+            margin-bottom: 10px;
+        }
+
+        #dateTextView {
+            font-size: 18px;
+            color: var(--text-secondary);
+            margin-bottom: 5px;
+        }
+
+        #currentEventTextView {
+            font-size: 20px;
+            color: var(--lesson-active);
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
+
+        .schedule-title {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        /* Горизонтальний розклад */
+        .schedule-scroll {
+            width: 100%;
+            overflow-x: auto;
+            white-space: nowrap;
+            padding: 10px 0;
+            -webkit-overflow-scrolling: touch;
+            display: flex;
+            justify-content: center;
+        }
+
+        .schedule-scroll::-webkit-scrollbar {
+            display: none;
+        }
+
+        .schedule-content {
+            display: inline-flex;
+            gap: 4px;
+            align-items: center;
+            padding: 4px;
+        }
+
+        .lesson-item {
+            background-color: var(--lesson-bg);
+            width: 75px;
+            height: 80px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            border-radius: 12px;
+            font-size: 13px;
+            transition: background-color 0.3s;
+        }
+
+        .break-item {
+            width: 35px;
+            text-align: center;
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        .active-lesson {
+            background-color: var(--lesson-active) !important;
+        }
+
+        .active-break {
+            color: var(--break-active) !important;
+            font-weight: bold;
+        }
+
+        /* Рухомий рядок */
+        #marqueeContainer {
+            width: 100%;
+            background-color: var(--title-bg);
+            border-radius: 20px;
+            padding: 12px;
+            margin-top: 20px;
+            overflow: hidden;
+            box-sizing: border-box;
+        }
+
+        #marqueeTextView {
+            font-size: 16px;
+            white-space: nowrap;
+        }
+
+        .footer {
+            margin-top: 20px;
+            color: #808080;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="schoolTitle">Назва закладу</div>
+
+    <div class="logo-container">
+        <img id="schoolLogo" src="https://via.placeholder.com/150?text=LOGO" alt="School Logo">
+    </div>
+
+    <div class="clock-block">
+        <div id="timeTextView">00:00</div>
+        <div id="dateTextView">01 Січня 2025, Понеділок</div>
+        <div id="currentEventTextView">Завантаження...</div>
+        <div class="schedule-title">📚 Розклад уроків</div>
+    </div>
+
+    <div class="schedule-scroll">
+        <div class="schedule-content" id="scheduleContent">
+            </div>
+    </div>
+
+    <div id="marqueeContainer">
+        <marquee id="marqueeTextView" scrollamount="5">Завантаження повідомлення...</marquee>
+    </div>
+
+    <div class="footer">Розробник Obariv by Krasovskiy</div>
+
+    <script>
+        // Дані про уроки з MainActivity.kt
+        const lessonTimes = [
+            { id: 1, start: "09:00", end: "09:45" },
+            { id: 2, start: "09:55", end: "10:40" },
+            { id: 3, start: "11:00", end: "11:45" },
+            { id: 4, start: "12:00", end: "12:45" },
+            { id: 5, start: "13:00", end: "13:45" },
+            { id: 6, start: "13:50", end: "14:35" },
+            { id: 7, start: "14:40", end: "15:25" },
+            { id: 8, start: "15:30", end: "16:15" }
+        ];
+
+        let timeOffset = 0; // Різниця між системним часом та інтернет-часом
+
+        // 1. Отримання часу з інтернету
+        async function syncWithInternetTime() {
+            try {
+                const response = await fetch('https://worldtimeapi.org/api/timezone/Europe/Kyiv');
+                const data = await response.json();
+                const internetTime = new Date(data.datetime).getTime();
+                const localTime = new Date().getTime();
+                timeOffset = internetTime - localTime;
+                console.log("Час синхронізовано. Зміщення: " + timeOffset + "ms");
+            } catch (e) {
+                console.error("Не вдалося отримати час з інтернету, використовуємо системний.");
+            }
+        }
+
+        function getNow() {
+            return new Date(new Date().getTime() + timeOffset);
+        }
+
+        // 2. Логіка оновлення годинника та статусів
+        function updateUI() {
+            const now = getNow();
+            
+            // Оновлення часу
+            const timeStr = now.toLocaleTimeString('uk-UA', { hour: '2-digit', minute: '2-digit' });
+            document.getElementById('timeTextView').innerText = timeStr;
+
+            // Оновлення дати
+            const dateStr = now.toLocaleDateString('uk-UA', { 
+                day: '2-digit', month: 'long', year: 'numeric', weekday: 'long' 
+            });
+            document.getElementById('dateTextView').innerText = dateStr;
+
+            const currentMinutes = now.getHours() * 60 + now.getMinutes();
+            let status = "Уроки не тривають";
+            let activeLessonId = -1;
+            let activeBreakId = -1;
+
+            // Хвилина мовчання (09:00)
+            if (now.getHours() === 9 && now.getMinutes() === 0) {
+                status = "🕯️ Хвилина мовчання";
+                document.getElementById('currentEventTextView').style.color = "#FFDD44";
+            } else {
+                document.getElementById('currentEventTextView').style.color = "var(--lesson-active)";
+                
+                // Перевірка уроків
+                lessonTimes.forEach((lesson, index) => {
+                    const [sH, sM] = lesson.start.split(':').map(Number);
+                    const [eH, eM] = lesson.end.split(':').map(Number);
+                    const startTotal = sH * 60 + sM;
+                    const endTotal = eH * 60 + eM;
+
+                    if (currentMinutes >= startTotal && currentMinutes < endTotal) {
+                        status = `Триває ${lesson.id} урок`;
+                        activeLessonId = lesson.id;
+                    }
+
+                    // Перевірка перерв
+                    if (index < lessonTimes.length - 1) {
+                        const nextLesson = lessonTimes[index + 1];
+                        const [nsH, nsM] = nextLesson.start.split(':').map(Number);
+                        const nextStartTotal = nsH * 60 + nsM;
+                        
+                        if (currentMinutes >= endTotal && currentMinutes < nextStartTotal) {
+                            status = "Триває перерва";
+                            activeBreakId = lesson.id;
+                        }
+                    }
+                });
+            }
+
+            document.getElementById('currentEventTextView').innerText = status;
+            renderSchedule(activeLessonId, activeBreakId);
+        }
+
+        // 3. Відтворення розкладу
+        function renderSchedule(activeLessonId, activeBreakId) {
+            const container = document.getElementById('scheduleContent');
+            container.innerHTML = '';
+
+            lessonTimes.forEach((lesson, index) => {
+                // Урок
+                const lessonDiv = document.createElement('div');
+                lessonDiv.className = `lesson-item ${lesson.id === activeLessonId ? 'active-lesson' : ''}`;
+                lessonDiv.innerHTML = `<b>${lesson.id}</b><span>${lesson.start}</span><span>${lesson.end}</span>`;
+                container.appendChild(lessonDiv);
+
+                // Перерва
+                if (index < lessonTimes.length - 1) {
+                    const nextLesson = lessonTimes[index + 1];
+                    const breakDuration = calculateMinutes(nextLesson.start) - calculateMinutes(lesson.end);
+                    const breakDiv = document.createElement('div');
+                    breakDiv.className = `break-item ${lesson.id === activeBreakId ? 'active-break' : ''}`;
+                    breakDiv.innerText = `${breakDuration}\nхв`;
+                    container.appendChild(breakDiv);
+                }
+            });
+        }
+
+        function calculateMinutes(timeStr) {
+            const [h, m] = timeStr.split(':').map(Number);
+            return h * 60 + m;
+        }
+
+        // 4. Завантаження повідомлення
+        async function loadMarqueeText() {
+            const url = 'https://api.allorigins.win/get?url=' + encodeURIComponent('https://pastebin.com/raw/9hVaYuZE');
+            try {
+                const response = await fetch(url);
+                const data = await response.json();
+                document.getElementById('marqueeTextView').innerText = data.contents;
+            } catch (e) {
+                document.getElementById('marqueeTextView').innerText = "⚠️ Не вдалося завантажити повідомлення.";
+            }
+        }
+
+        // Ініціалізація
+        syncWithInternetTime();
+        setInterval(updateUI, 1000);
+        setInterval(syncWithInternetTime, 600000); // Синхронізація раз на 10 хв
+        loadMarqueeText();
+        setInterval(loadMarqueeText, 120000); // Оновлення тексту раз на 2 хв
+    </script>
+</body>
+</html>
