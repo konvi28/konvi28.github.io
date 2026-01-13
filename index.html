@@ -3,333 +3,949 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>МійРозклад Obariv</title>
+    <title>Розклад уроків</title>
     <style>
-        /* Стилізація згідно з activity_main.xml та MainActivity.kt */
-        :root {
-            --bg-color: #1a1a2e;
-            --text-primary: #ffffff;
-            --text-secondary: #e0e0e0;
-            --time-color: #00d9ff;
-            --lesson-bg: #3d5187;
-            --lesson-active: #049715;
-            --break-active: #a68f14;
-            --title-bg: rgba(0, 0, 0, 0.4);
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
         }
 
         body {
-            margin: 0;
-            padding: 20px 14px;
-            background-color: var(--bg-color);
-            color: var(--text-primary);
-            font-family: 'Segoe UI', Roboto, sans-serif;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            min-height: 100vh;
-            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: #1a1a2e;
+            color: #ffffff;
             overflow-x: hidden;
+            transition: background-color 0.3s;
         }
 
-        #schoolTitle {
-            font-size: 24px;
-            margin-top: 20px;
-            margin-bottom: 20px;
+        .container {
+            max-width: 100%;
+            padding: 20px 14px;
+            margin: 0 auto;
+        }
+
+        .school-title {
             text-align: center;
+            font-size: 24px;
             font-weight: 500;
+            letter-spacing: 0.01em;
+            margin-bottom: 20px;
+            cursor: pointer;
+            user-select: none;
+            padding: 8px;
+            border-radius: 8px;
+            transition: background-color 0.2s;
+        }
+
+        .school-title:hover {
+            background-color: rgba(255, 255, 255, 0.05);
         }
 
         .logo-container {
-            flex: 1;
             display: flex;
-            align-items: center;
             justify-content: center;
-            margin-top: 10px;
-            min-height: 120px;
-        }
-
-        #schoolLogo {
-            max-height: 150px;
-            max-width: 150px;
-            object-fit: contain;
-        }
-
-        .clock-block {
-            flex: 1.8;
-            display: flex;
-            flex-direction: column;
             align-items: center;
-            justify-content: center;
-            width: 100%;
-            margin-top: 20px;
+            margin: 30px 0;
+            min-height: 150px;
         }
 
-        #timeTextView {
-            font-size: 80px;
-            color: var(--time-color);
-            background-color: var(--title-bg);
-            padding: 10px 40px;
-            border-radius: 100px;
+        .school-logo {
+            max-width: 200px;
+            max-height: 200px;
+            cursor: pointer;
+            transition: transform 0.2s;
+            border-radius: 12px;
+        }
+
+        .school-logo:hover {
+            transform: scale(1.05);
+        }
+
+        .clock-section {
+            text-align: center;
+            margin: 40px 0;
+        }
+
+        .time-display {
+            font-size: 72px;
             font-weight: 500;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.5);
+            color: #00d9ff;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+            background: rgba(0, 0, 0, 0.4);
+            padding: 20px 40px;
+            border-radius: 132px;
+            display: inline-block;
             margin-bottom: 10px;
         }
 
-        #dateTextView {
+        .date-display {
             font-size: 18px;
-            color: var(--text-secondary);
-            margin-bottom: 5px;
+            color: #e0e0e0;
+            margin: 10px 0;
         }
 
-        #currentEventTextView {
-            font-size: 20px;
-            color: var(--lesson-active);
-            font-weight: bold;
-            margin-bottom: 15px;
+        .current-event {
+            font-size: 16px;
+            font-weight: 600;
+            color: #00ff88;
+            margin: 10px 0;
         }
 
         .schedule-title {
             font-size: 18px;
-            font-weight: bold;
+            font-weight: 600;
+            cursor: pointer;
+            display: inline-block;
+            padding: 8px 16px;
+            border-radius: 8px;
+            transition: background-color 0.2s;
+            user-select: none;
+        }
+
+        .schedule-title:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+
+        .schedule-container {
+            overflow-x: auto;
+            margin: 20px 0;
+            padding: 10px 0;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .schedule-container::-webkit-scrollbar {
+            height: 8px;
+        }
+
+        .schedule-container::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+        }
+
+        .schedule-container::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 4px;
+        }
+
+        .schedule-row {
+            display: flex;
+            gap: 0;
+            justify-content: center;
+            min-width: max-content;
+            padding: 0 20px;
+        }
+
+        .lesson-block {
+            background: #3d5187;
+            padding: 12px;
+            min-width: 65px;
+            text-align: center;
+            font-size: 13px;
+            line-height: 1.4;
+            cursor: pointer;
+            transition: all 0.2s;
+            border-radius: 20px;
+            margin: 0 1px;
+        }
+
+        .lesson-block:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+        }
+
+        .lesson-block.active {
+            background: #049715;
+            box-shadow: 0 0 20px rgba(4, 151, 21, 0.5);
+        }
+
+        .break-block {
+            padding: 12px 8px;
+            min-width: 24px;
+            text-align: center;
+            font-size: 13px;
+            color: #ffffff;
+        }
+
+        .break-block.active {
+            background: #a68f14;
+            border-radius: 8px;
+        }
+
+        .marquee-container {
+            background: rgba(0, 0, 0, 0.4);
+            border-radius: 28px;
+            padding: 12px 20px;
+            margin: 30px 0 20px 0;
+            overflow: hidden;
+            cursor: pointer;
+        }
+
+        .marquee-text {
+            white-space: nowrap;
+            animation: marquee 30s linear infinite;
+            display: inline-block;
+        }
+
+        @keyframes marquee {
+            0% { transform: translateX(100%); }
+            100% { transform: translateX(-100%); }
+        }
+
+        .author {
+            text-align: center;
+            color: #808080;
+            font-size: 14px;
+            margin-top: 20px;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            animation: fadeIn 0.2s;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .modal-content {
+            background: #2a2a3e;
+            margin: 5% auto;
+            padding: 30px;
+            border-radius: 16px;
+            max-width: 600px;
+            max-height: 80vh;
+            overflow-y: auto;
+            animation: slideIn 0.3s;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateY(-50px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .modal-content h2 {
+            margin-bottom: 20px;
+            color: #00d9ff;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #e0e0e0;
+        }
+
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #3d5187;
+            border-radius: 8px;
+            background: #1a1a2e;
+            color: #ffffff;
+            font-size: 16px;
+            transition: border-color 0.2s;
+        }
+
+        .form-group input:focus, .form-group select:focus {
+            outline: none;
+            border-color: #00d9ff;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 25px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.2s;
+            flex: 1;
+            min-width: 100px;
+        }
+
+        .btn-primary {
+            background: #00d9ff;
+            color: #1a1a2e;
+        }
+
+        .btn-primary:hover {
+            background: #00b8e6;
+            transform: translateY(-2px);
+        }
+
+        .btn-secondary {
+            background: #3d5187;
+            color: #ffffff;
+        }
+
+        .btn-secondary:hover {
+            background: #4d6197;
+        }
+
+        .btn-danger {
+            background: #ff4444;
+            color: #ffffff;
+        }
+
+        .btn-danger:hover {
+            background: #cc0000;
+        }
+
+        .theme-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 12px;
+            margin-top: 20px;
+        }
+
+        .theme-option {
+            padding: 16px;
+            border: 2px solid #3d5187;
+            border-radius: 12px;
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.2s;
+            background: #1a1a2e;
+        }
+
+        .theme-option:hover {
+            transform: translateY(-2px);
+            border-color: #00d9ff;
+        }
+
+        .theme-option.selected {
+            border-color: #00ff88;
+            background: rgba(0, 255, 136, 0.1);
+        }
+
+        .week-schedule {
+            margin-top: 20px;
+        }
+
+        .day-section {
+            margin-bottom: 20px;
+            padding: 15px;
+            background: #16213e;
+            border-radius: 12px;
+        }
+
+        .day-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #00d9ff;
             margin-bottom: 10px;
         }
 
-        /* Горизонтальний розклад */
-        .schedule-scroll {
-            width: 100%;
-            overflow-x: auto;
-            white-space: nowrap;
-            padding: 10px 0;
-            -webkit-overflow-scrolling: touch;
-            display: flex;
-            justify-content: center;
+        .day-lessons {
+            color: #e0e0e0;
+            line-height: 1.8;
+            white-space: pre-line;
         }
 
-        .schedule-scroll::-webkit-scrollbar {
-            display: none;
+        @media (max-width: 768px) {
+            .time-display {
+                font-size: 48px;
+                padding: 15px 30px;
+            }
+
+            .modal-content {
+                margin: 10px;
+                padding: 20px;
+                max-width: calc(100% - 20px);
+            }
+
+            .btn-group {
+                flex-direction: column;
+            }
+
+            .btn {
+                width: 100%;
+            }
         }
 
-        .schedule-content {
-            display: inline-flex;
-            gap: 4px;
-            align-items: center;
-            padding: 4px;
+        .settings-btn {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: #00d9ff;
+            color: #1a1a2e;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(0, 217, 255, 0.4);
+            transition: all 0.2s;
+            z-index: 100;
         }
 
-        .lesson-item {
-            background-color: var(--lesson-bg);
-            width: 75px;
-            height: 80px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            border-radius: 12px;
-            font-size: 13px;
-            transition: background-color 0.3s;
+        .settings-btn:hover {
+            transform: scale(1.1) rotate(90deg);
         }
 
-        .break-item {
-            width: 35px;
-            text-align: center;
+        .hint-text {
             font-size: 12px;
-            color: var(--text-secondary);
-        }
-
-        .active-lesson {
-            background-color: var(--lesson-active) !important;
-        }
-
-        .active-break {
-            color: var(--break-active) !important;
-            font-weight: bold;
-        }
-
-        /* Рухомий рядок */
-        #marqueeContainer {
-            width: 100%;
-            background-color: var(--title-bg);
-            border-radius: 20px;
-            padding: 12px;
-            margin-top: 20px;
-            overflow: hidden;
-            box-sizing: border-box;
-        }
-
-        #marqueeTextView {
-            font-size: 16px;
-            white-space: nowrap;
-        }
-
-        .footer {
-            margin-top: 20px;
-            color: #808080;
-            font-size: 12px;
+            color: #999;
+            margin-top: 8px;
         }
     </style>
 </head>
 <body>
+    <div class="container">
+        <div class="school-title" id="schoolTitle" onclick="editSchoolTitle()">Назва закладу</div>
 
-    <div id="schoolTitle">Обарівський ліцей</div>
+        <div class="logo-container">
+            <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200' viewBox='0 0 200 200'%3E%3Crect fill='%2300d9ff' width='200' height='200' rx='20'/%3E%3Ctext x='100' y='120' font-size='80' text-anchor='middle' fill='%231a1a2e' font-family='sans-serif' font-weight='bold'%3E🏫%3C/text%3E%3C/svg%3E" 
+                 class="school-logo" 
+                 id="schoolLogo" 
+                 onclick="showLogoOptions()" 
+                 alt="Логотип закладу">
+        </div>
 
-    <div class="logo-container">
-        <img id="schoolLogo" src="https://via.placeholder.com/150?text=LOGO" alt="School Logo">
+        <div class="clock-section">
+            <div class="time-display" id="timeDisplay">00:00</div>
+            <div class="date-display" id="dateDisplay">01 Січня 2025, Понеділок</div>
+            <div class="current-event" id="currentEvent" onclick="editSilentMinute()">Уроки не тривають</div>
+            <div class="schedule-title" onclick="showWeekSchedule()">📚 Розклад уроків</div>
+        </div>
+
+        <div class="schedule-container" id="scheduleContainer">
+            <div class="schedule-row" id="scheduleRow"></div>
+        </div>
+
+        <div class="marquee-container" onclick="editMarqueeUrl()">
+            <div class="marquee-text" id="marqueeText">Завантаження повідомлення...</div>
+        </div>
+
+        <div class="author">Розробник Obariv by Krasovskiy</div>
     </div>
 
-    <div class="clock-block">
-        <div id="timeTextView">00:00</div>
-        <div id="dateTextView">01 Січня 2025, Понеділок</div>
-        <div id="currentEventTextView">Завантаження...</div>
-        <div class="schedule-title">📚 Розклад уроків</div>
-    </div>
-
-    <div class="schedule-scroll">
-        <div class="schedule-content" id="scheduleContent">
-            </div>
-    </div>
-
-    <div id="marqueeContainer">
-        <marquee id="marqueeTextView" scrollamount="5">Завантаження повідомлення...</marquee>
-    </div>
-
-    <div class="footer">Розробник Obariv by Krasovskiy</div>
+    <button class="settings-btn" onclick="showSettings()">⚙️</button>
 
     <script>
-        // Дані про уроки з MainActivity.kt
-        const lessonTimes = [
-            { id: 1, start: "09:00", end: "09:45" },
-            { id: 2, start: "09:55", end: "10:40" },
-            { id: 3, start: "11:00", end: "11:45" },
-            { id: 4, start: "12:00", end: "12:45" },
-            { id: 5, start: "13:00", end: "13:45" },
-            { id: 6, start: "13:50", end: "14:35" },
-            { id: 7, start: "14:40", end: "15:25" },
-            { id: 8, start: "15:30", end: "16:15" }
+        // Дані
+        const themes = [
+            {id: 'dark', name: '🌙 Темна', bg: '#1a1a2e', text: '#ffffff', time: '#0c78c9', lesson: '#112951', active: '#049715', breakActive: '#a68f14'},
+            {id: 'light', name: '☀️ Світла', bg: '#f5f5f5', text: '#1a1a1a', time: '#0066cc', lesson: '#e3f2fd', active: '#4caf50', breakActive: '#ff9800'},
+            {id: 'blue', name: '💙 Синя', bg: '#0d1b2a', text: '#e0e1dd', time: '#00b4d8', lesson: '#1b263b', active: '#0096c7', breakActive: '#90e0ef'},
+            {id: 'purple', name: '💜 Фіолетова', bg: '#2d1b3d', text: '#f0e6ff', time: '#c77dff', lesson: '#3d2952', active: '#9d4edd', breakActive: '#e0aaff'},
+            {id: 'green', name: '💚 Зелена', bg: '#1b2a1f', text: '#e8f5e9', time: '#4caf50', lesson: '#2d4030', active: '#66bb6a', breakActive: '#81c784'},
+            {id: 'red', name: '❤️ Червона', bg: '#2a1215', text: '#ffebee', time: '#ef5350', lesson: '#3d1f23', active: '#f44336', breakActive: '#e57373'},
+            {id: 'orange', name: '🧡 Помаранчева', bg: '#2a1f0d', text: '#fff3e0', time: '#ff9800', lesson: '#3d2f1b', active: '#fb8c00', breakActive: '#ffb74d'},
+            {id: 'pink', name: '💗 Рожева', bg: '#2a1520', text: '#fce4ec', time: '#ec407a', lesson: '#3d2130', active: '#e91e63', breakActive: '#f06292'},
+            {id: 'teal', name: '🩵 Бірюзова', bg: '#0d2a2a', text: '#e0f2f1', time: '#26a69a', lesson: '#1b3d3d', active: '#009688', breakActive: '#4db6ac'},
+            {id: 'indigo', name: '💠 Індиго', bg: '#1a1a3e', text: '#e8eaf6', time: '#5c6bc0', lesson: '#252552', active: '#3f51b5', breakActive: '#7986cb'}
         ];
 
-        let timeOffset = 0; // Різниця між системним часом та інтернет-часом
-
-        // 1. Отримання часу з інтернету
-        async function syncWithInternetTime() {
-            try {
-                const response = await fetch('https://worldtimeapi.org/api/timezone/Europe/Kyiv');
-                const data = await response.json();
-                const internetTime = new Date(data.datetime).getTime();
-                const localTime = new Date().getTime();
-                timeOffset = internetTime - localTime;
-                console.log("Час синхронізовано. Зміщення: " + timeOffset + "ms");
-            } catch (e) {
-                console.error("Не вдалося отримати час з інтернету, використовуємо системний.");
-            }
-        }
-
-        function getNow() {
-            return new Date(new Date().getTime() + timeOffset);
-        }
-
-        // 2. Логіка оновлення годинника та статусів
-        function updateUI() {
-            const now = getNow();
-            
-            // Оновлення часу
-            const timeStr = now.toLocaleTimeString('uk-UA', { hour: '2-digit', minute: '2-digit' });
-            document.getElementById('timeTextView').innerText = timeStr;
-
-            // Оновлення дати
-            const dateStr = now.toLocaleDateString('uk-UA', { 
-                day: '2-digit', month: 'long', year: 'numeric', weekday: 'long' 
-            });
-            document.getElementById('dateTextView').innerText = dateStr;
-
-            const currentMinutes = now.getHours() * 60 + now.getMinutes();
-            let status = "Уроки не тривають";
-            let activeLessonId = -1;
-            let activeBreakId = -1;
-
-            // Хвилина мовчання (09:00)
-            if (now.getHours() === 9 && now.getMinutes() === 0) {
-                status = "🕯️ Хвилина мовчання";
-                document.getElementById('currentEventTextView').style.color = "#FFDD44";
-            } else {
-                document.getElementById('currentEventTextView').style.color = "var(--lesson-active)";
-                
-                // Перевірка уроків
-                lessonTimes.forEach((lesson, index) => {
-                    const [sH, sM] = lesson.start.split(':').map(Number);
-                    const [eH, eM] = lesson.end.split(':').map(Number);
-                    const startTotal = sH * 60 + sM;
-                    const endTotal = eH * 60 + eM;
-
-                    if (currentMinutes >= startTotal && currentMinutes < endTotal) {
-                        status = `Триває ${lesson.id} урок`;
-                        activeLessonId = lesson.id;
-                    }
-
-                    // Перевірка перерв
-                    if (index < lessonTimes.length - 1) {
-                        const nextLesson = lessonTimes[index + 1];
-                        const [nsH, nsM] = nextLesson.start.split(':').map(Number);
-                        const nextStartTotal = nsH * 60 + nsM;
-                        
-                        if (currentMinutes >= endTotal && currentMinutes < nextStartTotal) {
-                            status = "Триває перерва";
-                            activeBreakId = lesson.id;
-                        }
-                    }
-                });
-            }
-
-            document.getElementById('currentEventTextView').innerText = status;
-            renderSchedule(activeLessonId, activeBreakId);
-        }
-
-        // 3. Відтворення розкладу
-        function renderSchedule(activeLessonId, activeBreakId) {
-            const container = document.getElementById('scheduleContent');
-            container.innerHTML = '';
-
-            lessonTimes.forEach((lesson, index) => {
-                // Урок
-                const lessonDiv = document.createElement('div');
-                lessonDiv.className = `lesson-item ${lesson.id === activeLessonId ? 'active-lesson' : ''}`;
-                lessonDiv.innerHTML = `<b>${lesson.id}</b><span>${lesson.start}</span><span>${lesson.end}</span>`;
-                container.appendChild(lessonDiv);
-
-                // Перерва
-                if (index < lessonTimes.length - 1) {
-                    const nextLesson = lessonTimes[index + 1];
-                    const breakDuration = calculateMinutes(nextLesson.start) - calculateMinutes(lesson.end);
-                    const breakDiv = document.createElement('div');
-                    breakDiv.className = `break-item ${lesson.id === activeBreakId ? 'active-break' : ''}`;
-                    breakDiv.innerText = `${breakDuration}\nхв`;
-                    container.appendChild(breakDiv);
-                }
-            });
-        }
-
-        function calculateMinutes(timeStr) {
-            const [h, m] = timeStr.split(':').map(Number);
-            return h * 60 + m;
-        }
-
-        // 4. Завантаження повідомлення
-        async function loadMarqueeText() {
-            const url = 'https://api.allorigins.win/get?url=' + encodeURIComponent('https://pastebin.com/raw/9hVaYuZE');
-            try {
-                const response = await fetch(url);
-                const data = await response.json();
-                document.getElementById('marqueeTextView').innerText = data.contents;
-            } catch (e) {
-                document.getElementById('marqueeTextView').innerText = "⚠️ Не вдалося завантажити повідомлення.";
-            }
-        }
+        const daysOfWeek = ['Понеділок', 'Вівторок', 'Середа', 'Четвер', "П'ятниця", 'Субота', 'Неділя'];
+        
+        let currentTheme = themes[0];
+        let lessonTimes = {};
+        let lessonsByDay = {};
+        let silentMinute = {hour: 9, minute: 0};
 
         // Ініціалізація
-        syncWithInternetTime();
-        setInterval(updateUI, 1000);
-        setInterval(syncWithInternetTime, 600000); // Синхронізація раз на 10 хв
-        loadMarqueeText();
-        setInterval(loadMarqueeText, 120000); // Оновлення тексту раз на 2 хв
+        function init() {
+            loadFromStorage();
+            initDefaultLessonTimes();
+            renderSchedule();
+            updateTime();
+            setInterval(updateTime, 1000);
+            setInterval(highlightCurrentEvent, 5000);
+            applyTheme();
+            loadMarqueeText();
+            setInterval(loadMarqueeText, 2 * 60 * 1000);
+        }
+
+        function loadFromStorage() {
+            const saved = localStorage.getItem('scheduleApp');
+            if (saved) {
+                const data = JSON.parse(saved);
+                document.getElementById('schoolTitle').textContent = data.schoolTitle || 'Назва закладу';
+                if (data.theme) currentTheme = themes.find(t => t.id === data.theme) || themes[0];
+                if (data.lessonTimes) lessonTimes = data.lessonTimes;
+                if (data.lessonsByDay) lessonsByDay = data.lessonsByDay;
+                if (data.silentMinute) silentMinute = data.silentMinute;
+                if (data.marqueeUrl) document.getElementById('marqueeText').dataset.url = data.marqueeUrl;
+                if (data.logo) document.getElementById('schoolLogo').src = data.logo;
+            }
+        }
+
+        function saveToStorage() {
+            const data = {
+                schoolTitle: document.getElementById('schoolTitle').textContent,
+                theme: currentTheme.id,
+                lessonTimes,
+                lessonsByDay,
+                silentMinute,
+                marqueeUrl: document.getElementById('marqueeText').dataset.url,
+                logo: document.getElementById('schoolLogo').src
+            };
+            localStorage.setItem('scheduleApp', JSON.stringify(data));
+        }
+
+        function initDefaultLessonTimes() {
+            if (Object.keys(lessonTimes).length === 0) {
+                lessonTimes = {
+                    1: {start: '09:00', end: '09:45'},
+                    2: {start: '09:55', end: '10:40'},
+                    3: {start: '11:00', end: '11:45'},
+                    4: {start: '12:00', end: '12:45'},
+                    5: {start: '13:00', end: '13:45'},
+                    6: {start: '13:50', end: '14:35'},
+                    7: {start: '14:40', end: '15:25'},
+                    8: {start: '15:30', end: '16:15'}
+                };
+            }
+            
+            if (!lessonsByDay || Object.keys(lessonsByDay).length === 0) {
+                lessonsByDay = {};
+                for (let day = 1; day <= 7; day++) {
+                    lessonsByDay[day] = {};
+                }
+            }
+        }
+
+        function renderSchedule() {
+            const row = document.getElementById('scheduleRow');
+            row.innerHTML = '';
+
+            for (let i = 1; i <= 8; i++) {
+                const time = lessonTimes[i];
+                const lesson = document.createElement('div');
+                lesson.className = 'lesson-block';
+                lesson.dataset.lesson = i;
+                lesson.onclick = () => editLesson(i);
+                
+                const currentDay = new Date().getDay();
+                const day = currentDay === 0 ? 7 : currentDay;
+                const className = lessonsByDay[day]?.[i] || '';
+                
+                lesson.innerHTML = `${i}<br>${time.start}<br>${time.end}${className ? '<br>' + className : ''}`;
+                row.appendChild(lesson);
+
+                if (i < 8) {
+                    const breakBlock = document.createElement('div');
+                    breakBlock.className = 'break-block';
+                    const breakDuration = calculateBreakDuration(time.end, lessonTimes[i + 1].start);
+                    breakBlock.innerHTML = `${breakDuration}<br>хв`;
+                    row.appendChild(breakBlock);
+                }
+            }
+        }
+
+        function calculateBreakDuration(endTime, startTime) {
+            const [eh, em] = endTime.split(':').map(Number);
+            const [sh, sm] = startTime.split(':').map(Number);
+            return (sh * 60 + sm) - (eh * 60 + em);
+        }
+
+        function updateTime() {
+            const now = new Date();
+            const hours = String(now.getHours()).padStart(2, '0');
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+            document.getElementById('timeDisplay').textContent = `${hours}:${minutes}`;
+
+            const options = {weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'};
+            const dateStr = now.toLocaleDateString('uk-UA', options);
+            document.getElementById('dateDisplay').textContent = dateStr.charAt(0).toUpperCase() + dateStr.slice(1);
+
+            highlightCurrentEvent();
+        }
+
+        function highlightCurrentEvent() {
+            const now = new Date();
+            const hour = now.getHours();
+            const minute = now.getMinutes();
+            const currentMinutes = hour * 60 + minute;
+            const currentDay = now.getDay() === 0 ? 7 : now.getDay();
+
+            document.querySelectorAll('.lesson-block, .break-block').forEach(el => {
+                el.classList.remove('active');
+            });
+
+            if (hour === silentMinute.hour && minute === silentMinute.minute) {
+                document.getElementById('currentEvent').textContent = '🕯️ Хвилина мовчання';
+                document.getElementById('currentEvent').style.color = '#FFDD44';
+                return;
+            }
+
+            for (let i = 1; i <= 8; i++) {
+                const time = lessonTimes[i];
+                const [sh, sm] = time.start.split(':').map(Number);
+                const [eh, em] = time.end.split(':').map(Number);
+                const startMin = sh * 60 + sm;
+                const endMin = eh * 60 + em;
+
+                if (currentMinutes >= startMin && currentMinutes < endMin) {
+                    const lesson = document.querySelector(`[data-lesson="${i}"]`);
+                    if (lesson) lesson.classList.add('active');
+                    
+                    const className = lessonsByDay[currentDay]?.[i] || '';
+                    document.getElementById('currentEvent').textContent = className ? 
+                        `${i} урок • ${className}` : `Триває ${i} урок`;
+                    document.getElementById('currentEvent').style.color = currentTheme.active;
+                    return;
+                }
+
+                if (i < 8) {
+                    const nextTime = lessonTimes[i + 1];
+                    const [nsh, nsm] = nextTime.start.split(':').map(Number);
+                    const nextStartMin = nsh * 60 + nsm;
+
+                    if (currentMinutes >= endMin && currentMinutes < nextStartMin) {
+                        const breaks = document.querySelectorAll('.break-block');
+                        if (breaks[i - 1]) breaks[i - 1].classList.add('active');
+                        
+                        document.getElementById('currentEvent').textContent = 'Триває перерва';
+                        document.getElementById('currentEvent').style.color = currentTheme.breakActive;
+                        return;
+                    }
+                }
+            }
+
+            document.getElementById('currentEvent').textContent = 'Уроки не тривають';
+            document.getElementById('currentEvent').style.color = currentTheme.active;
+        }
+
+        function applyTheme() {
+            document.body.style.background = currentTheme.bg;
+            document.body.style.color = currentTheme.text;
+            document.getElementById('timeDisplay').style.color = currentTheme.time;
+            document.querySelectorAll('.lesson-block').forEach(el => {
+                if (!el.classList.contains('active')) {
+                    el.style.background = currentTheme.lesson;
+                }
+            });
+            saveToStorage();
+        }
+
+        function loadMarqueeText() {
+            const url = document.getElementById('marqueeText').dataset.url || 'https://pastebin.com/raw/9hVaYuZE';
+            fetch(url)
+                .then(r => r.text())
+                .then(text => {
+                    document.getElementById('marqueeText').textContent = text;
+                })
+                .catch(() => {
+                    document.getElementById('marqueeText').textContent = '⚠️ Не вдалося завантажити повідомлення';
+                });
+        }
+
+        // Модальні вікна
+        function showModal(title, content, buttons) {
+            const modal = document.createElement('div');
+            modal.className = 'modal';
+            modal.style.display = 'block';
+            
+            const modalContent = document.createElement('div');
+            modalContent.className = 'modal-content';
+            
+            modalContent.innerHTML = `<h2>${title}</h2>${content}`;
+            
+            const btnGroup = document.createElement('div');
+            btnGroup.className = 'btn-group';
+            buttons.forEach(btn => {
+                const button = document.createElement('button');
+                button.className = `btn ${btn.class || 'btn-secondary'}`;
+                button.textContent = btn.text;
+                button.onclick = () => {
+                    if (btn.action) btn.action();
+                    document.body.removeChild(modal);
+                };
+                btnGroup.appendChild(button);
+            });
+            
+            modalContent.appendChild(btnGroup);
+            modal.appendChild(modalContent);
+            document.body.appendChild(modal);
+            
+            modal.onclick = (e) => {
+                if (e.target === modal) document.body.removeChild(modal);
+            };
+        }
+
+        function editSchoolTitle() {
+            const current = document.getElementById('schoolTitle').textContent;
+            showModal('🏫 Назва навчального закладу', `
+                <div class="form-group">
+                    <label>Введіть назву закладу:</label>
+                    <input type="text" id="newTitle" value="${current}" placeholder="Назва закладу">
+                </div>
+            `, [
+                {text: 'Зберегти', class: 'btn-primary', action: () => {
+                    const newTitle = document.getElementById('newTitle').value.trim();
+                    if (newTitle) {
+                        document.getElementById('schoolTitle').textContent = newTitle;
+                        saveToStorage();
+                    }
+                }},
+                {text: 'Скасувати'}
+            ]);
+        }
+
+        function showSettings() {
+            showModal('⚙️ Налаштування', `
+                <div class="form-group">
+                    <label>🎨 Виберіть тему:</label>
+                    <div class="theme-grid" id="themeGrid"></div>
+                </div>
+            `, [{text: 'Закрити', class: 'btn-primary'}]);
+            
+            const grid = document.getElementById('themeGrid');
+            themes.forEach(theme => {
+                const option = document.createElement('div');
+                option.className = 'theme-option' + (theme.id === currentTheme.id ? ' selected' : '');
+                option.textContent = theme.name;
+                option.style.background = theme.bg;
+                option.style.color = theme.text;
+                option.onclick = () => {
+                    currentTheme = theme;
+                    applyTheme();
+                    document.querySelectorAll('.theme-option').forEach(el => el.classList.remove('selected'));
+                    option.classList.add('selected');
+                };
+                grid.appendChild(option);
+            });
+        }
+
+        function editLesson(lessonNum) {
+            const time = lessonTimes[lessonNum];
+            const dayInputs = daysOfWeek.map((day, idx) => {
+                const className = lessonsByDay[idx + 1]?.[lessonNum] || '';
+                return `
+                    <div class="form-group">
+                        <label>${day}:</label>
+                        <input type="text" id="day${idx + 1}" value="${className}" placeholder="Наприклад: 3А ІНФ." maxlength="10">
+                    </div>
+                `;
+            }).join('');
+
+            showModal(`Редагувати урок ${lessonNum}`, `
+                <div class="form-group">
+                    <label>⏰ Час уроку:</label>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                        <div>
+                            <label style="font-size: 12px;">Початок:</label>
+                            <input type="time" id="startTime" value="${time.start}">
+                        </div>
+                        <div>
+                            <label style="font-size: 12px;">Закінчення:</label>
+                            <input type="time" id="endTime" value="${time.end}">
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>📚 Класи і предмети по днях тижня:</label>
+                    ${dayInputs}
+                </div>
+                <p class="hint-text">💡 Залиште порожнім день, якщо в цей день немає уроку</p>
+            `, [
+                {text: 'Очистити все', class: 'btn-danger', action: () => {
+                    for (let day = 1; day <= 7; day++) {
+                        delete lessonsByDay[day][lessonNum];
+                    }
+                    saveToStorage();
+                    renderSchedule();
+                }},
+                {text: 'Зберегти', class: 'btn-primary', action: () => {
+                    lessonTimes[lessonNum] = {
+                        start: document.getElementById('startTime').value,
+                        end: document.getElementById('endTime').value
+                    };
+                    
+                    for (let day = 1; day <= 7; day++) {
+                        const className = document.getElementById(`day${day}`).value.trim();
+                        if (className) {
+                            if (!lessonsByDay[day]) lessonsByDay[day] = {};
+                            lessonsByDay[day][lessonNum] = className;
+                        } else {
+                            if (lessonsByDay[day]) delete lessonsByDay[day][lessonNum];
+                        }
+                    }
+                    
+                    saveToStorage();
+                    renderSchedule();
+                }},
+                {text: 'Скасувати'}
+            ]);
+        }
+
+        function showWeekSchedule() {
+            const now = new Date();
+            const currentMinutes = now.getHours() * 60 + now.getMinutes();
+            const currentDay = now.getDay() === 0 ? 7 : now.getDay();
+
+            const scheduleHtml = daysOfWeek.map((day, idx) => {
+                const dayNum = idx + 1;
+                let lessonsText = '';
+                let hasLessons = false;
+
+                for (let lesson = 1; lesson <= 8; lesson++) {
+                    const className = lessonsByDay[dayNum]?.[lesson];
+                    const time = lessonTimes[lesson];
+                    
+                    if (className && time) {
+                        hasLessons = true;
+                        const [sh, sm] = time.start.split(':').map(Number);
+                        const [eh, em] = time.end.split(':').map(Number);
+                        const startMin = sh * 60 + sm;
+                        const endMin = eh * 60 + em;
+                        
+                        const isActive = (dayNum === currentDay) && (currentMinutes >= startMin && currentMinutes < endMin);
+                        
+                        lessonsText += `${isActive ? '✅ ' : ''}${lesson}. ${time.start} - ${time.end} • ${className}${isActive ? ' 🟢' : ''}\n`;
+                    }
+                }
+                
+                if (!hasLessons) lessonsText = '🔭 Уроків немає';
+                
+                return `
+                    <div class="day-section">
+                        <div class="day-title">🔵 ${day.toUpperCase()}</div>
+                        <div class="day-lessons">${lessonsText.trim()}</div>
+                    </div>
+                `;
+            }).join('');
+
+            showModal('📚 РОЗКЛАД НА ТИЖДЕНЬ', `
+                <div class="week-schedule">${scheduleHtml}</div>
+            `, [{text: 'Закрити', class: 'btn-primary'}]);
+        }
+
+        function editSilentMinute() {
+            const current = `${String(silentMinute.hour).padStart(2, '0')}:${String(silentMinute.minute).padStart(2, '0')}`;
+            
+            showModal('🕯️ Хвилина мовчання', `
+                <div class="form-group">
+                    <label>Встановіть час хвилини мовчання:</label>
+                    <input type="time" id="silentTime" value="${current}">
+                    <p class="hint-text">💡 Встановіть час для щоденної хвилини мовчання</p>
+                </div>
+            `, [
+                {text: 'За замовчуванням', class: 'btn-secondary', action: () => {
+                    silentMinute = {hour: 9, minute: 0};
+                    saveToStorage();
+                }},
+                {text: 'Зберегти', class: 'btn-primary', action: () => {
+                    const timeValue = document.getElementById('silentTime').value;
+                    const [h, m] = timeValue.split(':').map(Number);
+                    silentMinute = {hour: h, minute: m};
+                    saveToStorage();
+                }},
+                {text: 'Скасувати'}
+            ]);
+        }
+
+        function editMarqueeUrl() {
+            const current = document.getElementById('marqueeText').dataset.url || 'https://pastebin.com/raw/9hVaYuZE';
+            
+            showModal('🔗 URL для повідомлень', `
+                <div class="form-group">
+                    <label>Введіть посилання на сторінку з текстом повідомлення:</label>
+                    <input type="url" id="marqueeUrl" value="${current}" placeholder="https://pastebin.com/raw/...">
+                    <p class="hint-text">💡 Текст буде автоматично завантажуватись та оновлюватись кожні 2 хвилини</p>
+                </div>
+            `, [
+                {text: 'За замовчуванням', class: 'btn-secondary', action: () => {
+                    document.getElementById('marqueeText').dataset.url = 'https://pastebin.com/raw/9hVaYuZE';
+                    loadMarqueeText();
+                    saveToStorage();
+                }},
+                {text: 'Зберегти', class: 'btn-primary', action: () => {
+                    const url = document.getElementById('marqueeUrl').value.trim();
+                    if (url && (url.startsWith('http://') || url.startsWith('https://'))) {
+                        document.getElementById('marqueeText').dataset.url = url;
+                        loadMarqueeText();
+                        saveToStorage();
+                    } else {
+                        alert('Будь ласка, введіть коректне посилання');
+                    }
+                }},
+                {text: 'Скасувати'}
+            ]);
+        }
+
+        function showLogoOptions() {
+            showModal('🖼️ Логотип закладу', `
+                <div class="form-group">
+                    <label>Оберіть опцію:</label>
+                </div>
+            `, [
+                {text: '🖼 Завантажити зображення', class: 'btn-primary', action: () => {
+                    const input = document.createElement('input');
+                    input.type = 'file';
+                    input.accept = 'image/*';
+                    input.onchange = (e) => {
+                        const file = e.target.files[0];
+                        if (file) {
+                            const reader = new FileReader();
+                            reader.onload = (event) => {
+                                document.getElementById('schoolLogo').src = event.target.result;
+                                saveToStorage();
+                            };
+                            reader.readAsDataURL(file);
+                        }
+                    };
+                    input.click();
+                }},
+                {text: '🔗 Завантажити за URL', class: 'btn-primary', action: () => {
+                    showModal('🔗 URL логотипу', `
+                        <div class="form-group">
+                            <label>Введіть посилання на зображення:</label>
+                            <input type="url" id="logoUrl" placeholder="https://example.com/logo.png">
+                        </div>
+                    `, [
+                        {text: 'Завантажити', class: 'btn-primary', action: () => {
+                            const url = document.getElementById('logoUrl').value.trim();
+                            if (url && (url.startsWith('http://') || url.startsWith('https://'))) {
+                                document.getElementById('schoolLogo').src = url;
+                                saveToStorage();
+                            } else {
+                                alert('Будь ласка, введіть коректне посилання');
+                            }
+                        }},
+                        {text: 'Скасувати'}
+                    ]);
+                }},
+                {text: '↩️ Відновити за замовчуванням', class: 'btn-secondary', action: () => {
+                    document.getElementById('schoolLogo').src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200' viewBox='0 0 200 200'%3E%3Crect fill='%2300d9ff' width='200' height='200' rx='20'/%3E%3Ctext x='100' y='120' font-size='80' text-anchor='middle' fill='%231a1a2e' font-family='sans-serif' font-weight='bold'%3E🏫%3C/text%3E%3C/svg%3E";
+                    saveToStorage();
+                }},
+                {text: 'Скасувати'}
+            ]);
+        }
+
+        // Запуск додатку
+        window.addEventListener('DOMContentLoaded', init);
     </script>
 </body>
 </html>
