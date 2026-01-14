@@ -3,465 +3,93 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
     <link rel="icon" type="image/webp" href="logo.webp">
     <link rel="shortcut icon" type="image/webp" href="logo.webp">
     <link rel="apple-touch-icon" href="logo.webp">
-    
-    <title>МійРозклад</title>
+    <title>Мій Розклад</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        .logo {
-  background-image: url('logo.webp');
-
-  background-image: url('logo.png');
-}
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-            background: #1a1a2e;
-            color: #ffffff;
-            overflow-x: hidden;
-            transition: background-color 0.3s;
-        }
-
-        .container {
-            max-width: 100%;
-            padding: 20px 14px;
-            margin: 0 auto;
-        }
-
-        .school-title {
-            text-align: center;
-            font-size: 24px;
-            font-weight: 500;
-            letter-spacing: 0.01em;
-            margin-bottom: 20px;
-            cursor: pointer;
-            user-select: none;
-            padding: 8px;
-            border-radius: 8px;
-            transition: background-color 0.2s;
-        }
-
-        .school-title:hover {
-            background-color: rgba(255, 255, 255, 0.05);
-        }
-
-        .logo-container {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            margin: 30px 0;
-            min-height: 150px;
-        }
-
-        .school-logo {
-            max-width: 200px;
-            max-height: 200px;
-            cursor: pointer;
-            transition: transform 0.2s;
-            border-radius: 12px;
-        }
-
-        .school-logo:hover {
-            transform: scale(1.05);
-        }
-
-        .clock-section {
-            text-align: center;
-            margin: 40px 0;
-        }
-
-        .time-display {
-            font-size: 72px;
-            font-weight: 500;
-            color: #00d9ff;
-            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
-            background: rgba(0, 0, 0, 0.4);
-            padding: 20px 40px;
-            border-radius: 132px;
-            display: inline-block;
-            margin-bottom: 10px;
-        }
-
-        .date-display {
-            font-size: 18px;
-            color: #e0e0e0;
-            margin: 10px 0;
-        }
-
-        .current-event {
-            font-size: 16px;
-            font-weight: 600;
-            color: #00ff88;
-            margin: 10px 0;
-        }
-
-        .schedule-title {
-            font-size: 18px;
-            font-weight: 600;
-            cursor: pointer;
-            display: inline-block;
-            padding: 8px 16px;
-            border-radius: 8px;
-            transition: background-color 0.2s;
-            user-select: none;
-        }
-
-        .schedule-title:hover {
-            background-color: rgba(255, 255, 255, 0.1);
-        }
-
-        .schedule-container {
-            overflow-x: auto;
-            margin: 20px 0;
-            padding: 10px 0;
-            -webkit-overflow-scrolling: touch;
-        }
-
-        .schedule-container::-webkit-scrollbar {
-            height: 8px;
-        }
-
-        .schedule-container::-webkit-scrollbar-track {
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 4px;
-        }
-
-        .schedule-container::-webkit-scrollbar-thumb {
-            background: rgba(255, 255, 255, 0.3);
-            border-radius: 4px;
-        }
-
-        .schedule-row {
-            display: flex;
-            gap: 0;
-            justify-content: center;
-            min-width: max-content;
-            padding: 0 20px;
-        }
-
-        .lesson-block {
-            background: #3d5187;
-            padding: 12px;
-            min-width: 65px;
-            text-align: center;
-            font-size: 13px;
-            line-height: 1.4;
-            cursor: pointer;
-            transition: all 0.2s;
-            border-radius: 20px;
-            margin: 0 1px;
-        }
-
-        .lesson-block:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
-        }
-
-        .lesson-block.active {
-            background: #049715;
-            box-shadow: 0 0 20px rgba(4, 151, 21, 0.5);
-        }
-
-        .break-block {
-            padding: 12px 8px;
-            min-width: 24px;
-            text-align: center;
-            font-size: 13px;
-            color: #ffffff;
-        }
-
-        .break-block.active {
-            background: #a68f14;
-            border-radius: 8px;
-        }
-
-        .marquee-container {
-            background: rgba(0, 0, 0, 0.4);
-            border-radius: 28px;
-            padding: 12px 20px;
-            margin: 30px 0 20px 0;
-            overflow: hidden;
-            cursor: pointer;
-        }
-
-        .marquee-text {
-            white-space: nowrap;
-            animation: marquee 30s linear infinite;
-            display: inline-block;
-        }
-
-        @keyframes marquee {
-            0% { transform: translateX(100%); }
-            100% { transform: translateX(-100%); }
-        }
-
-        .author {
-            text-align: center;
-            color: #808080;
-            font-size: 14px;
-            margin-top: 20px;
-        }
-
-        .modal {
-            display: none;
-            position: fixed;
-            z-index: 1000;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.7);
-            animation: fadeIn 0.2s;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
-
-        .modal-content {
-            background: #2a2a3e;
-            margin: 5% auto;
-            padding: 30px;
-            border-radius: 16px;
-            max-width: 600px;
-            max-height: 80vh;
-            overflow-y: auto;
-            animation: slideIn 0.3s;
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
-        }
-
-        @keyframes slideIn {
-            from {
-                transform: translateY(-50px);
-                opacity: 0;
-            }
-            to {
-                transform: translateY(0);
-                opacity: 1;
-            }
-        }
-
-        .modal-content h2 {
-            margin-bottom: 20px;
-            color: #00d9ff;
-        }
-
-        .form-group {
-            margin-bottom: 20px;
-        }
-
-        .form-group label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: 600;
-            color: #e0e0e0;
-        }
-
-        .form-group input, .form-group select {
-            width: 100%;
-            padding: 12px;
-            border: 2px solid #3d5187;
-            border-radius: 8px;
-            background: #1a1a2e;
-            color: #ffffff;
-            font-size: 16px;
-            transition: border-color 0.2s;
-        }
-
-        .form-group input:focus, .form-group select:focus {
-            outline: none;
-            border-color: #00d9ff;
-        }
-
-        .btn-group {
-            display: flex;
-            gap: 10px;
-            margin-top: 25px;
-            flex-wrap: wrap;
-        }
-
-        .btn {
-            padding: 12px 24px;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 14px;
-            font-weight: 600;
-            transition: all 0.2s;
-            flex: 1;
-            min-width: 100px;
-        }
-
-        .btn-primary {
-            background: #00d9ff;
-            color: #1a1a2e;
-        }
-
-        .btn-primary:hover {
-            background: #00b8e6;
-            transform: translateY(-2px);
-        }
-
-        .btn-secondary {
-            background: #3d5187;
-            color: #ffffff;
-        }
-
-        .btn-secondary:hover {
-            background: #4d6197;
-        }
-
-        .btn-danger {
-            background: #ff4444;
-            color: #ffffff;
-        }
-
-        .btn-danger:hover {
-            background: #cc0000;
-        }
-
-        .theme-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-            gap: 12px;
-            margin-top: 20px;
-        }
-
-        .theme-option {
-            padding: 16px;
-            border: 2px solid #3d5187;
-            border-radius: 12px;
-            cursor: pointer;
-            text-align: center;
-            transition: all 0.2s;
-            background: #1a1a2e;
-        }
-
-        .theme-option:hover {
-            transform: translateY(-2px);
-            border-color: #00d9ff;
-        }
-
-        .theme-option.selected {
-            border-color: #00ff88;
-            background: rgba(0, 255, 136, 0.1);
-        }
-
-        .week-schedule {
-            margin-top: 20px;
-        }
-
-        .day-section {
-            margin-bottom: 20px;
-            padding: 15px;
-            background: #16213e;
-            border-radius: 12px;
-        }
-
-        .day-title {
-            font-size: 16px;
-            font-weight: 600;
-            color: #00d9ff;
-            margin-bottom: 10px;
-        }
-
-        .day-lessons {
-            color: #e0e0e0;
-            line-height: 1.8;
-            white-space: pre-line;
-        }
-
-        @media (max-width: 768px) {
-            .time-display {
-                font-size: 48px;
-                padding: 15px 30px;
-            }
-
-            .modal-content {
-                margin: 10px;
-                padding: 20px;
-                max-width: calc(100% - 20px);
-            }
-
-            .btn-group {
-                flex-direction: column;
-            }
-
-            .btn {
-                width: 100%;
-            }
-        }
-
-        .settings-btn {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            width: 50px;
-            height: 50px;
-            border-radius: 50%;
-            background: #00d9ff;
-            color: #1a1a2e;
-            border: none;
-            font-size: 24px;
-            cursor: pointer;
-            box-shadow: 0 4px 12px rgba(0, 217, 255, 0.4);
-            transition: all 0.2s;
-            z-index: 100;
-        }
-
-        .settings-btn:hover {
-            transform: scale(1.1) rotate(90deg);
-        }
-
-        .hint-text {
-            font-size: 12px;
-            color: #999;
-            margin-top: 8px;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #1a1a2e; color: #ffffff; overflow-x: hidden; transition: background-color 0.3s; }
+        .container { max-width: 100%; padding: 20px 14px; margin: 0 auto; }
+        .school-title { text-align: center; font-size: 24px; font-weight: 500; letter-spacing: 0.01em; margin-bottom: 20px; cursor: pointer; user-select: none; padding: 8px; border-radius: 8px; transition: background-color 0.2s; }
+        .school-title:hover { background-color: rgba(255, 255, 255, 0.05); }
+        .logo-container { display: flex; justify-content: center; align-items: center; margin: 30px 0; min-height: 150px; }
+        .school-logo { max-width: 200px; max-height: 200px; cursor: pointer; transition: transform 0.2s; border-radius: 12px; }
+        .school-logo:hover { transform: scale(1.05); }
+        .clock-section { text-align: center; margin: 40px 0; }
+        .time-display { font-size: 72px; font-weight: 500; color: #00d9ff; text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3); background: rgba(0, 0, 0, 0.4); padding: 20px 40px; border-radius: 132px; display: inline-block; margin-bottom: 10px; }
+        .date-display { font-size: 18px; color: #e0e0e0; margin: 10px 0; }
+        .current-event { font-size: 16px; font-weight: 600; color: #00ff88; margin: 10px 0; }
+        .schedule-title { font-size: 18px; font-weight: 600; cursor: pointer; display: inline-block; padding: 8px 16px; border-radius: 8px; transition: background-color 0.2s; user-select: none; }
+        .schedule-title:hover { background-color: rgba(255, 255, 255, 0.1); }
+        .schedule-container { overflow-x: auto; margin: 20px 0; padding: 10px 0; -webkit-overflow-scrolling: touch; }
+        .schedule-container::-webkit-scrollbar { height: 8px; }
+        .schedule-container::-webkit-scrollbar-track { background: rgba(255, 255, 255, 0.1); border-radius: 4px; }
+        .schedule-container::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.3); border-radius: 4px; }
+        .schedule-row { display: flex; gap: 0; justify-content: center; min-width: max-content; padding: 0 20px; }
+        .lesson-block { background: #3d5187; padding: 12px; min-width: 65px; text-align: center; font-size: 13px; line-height: 1.4; cursor: pointer; transition: all 0.2s; border-radius: 20px; margin: 0 1px; }
+        .lesson-block:hover { transform: translateY(-2px); box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3); }
+        .lesson-block.active { background: #049715; box-shadow: 0 0 20px rgba(4, 151, 21, 0.5); }
+        .break-block { padding: 12px 8px; min-width: 24px; text-align: center; font-size: 13px; color: #ffffff; }
+        .break-block.active { background: #a68f14; border-radius: 8px; }
+        .marquee-container { background: rgba(0, 0, 0, 0.4); border-radius: 28px; padding: 12px 20px; margin: 30px 0 20px 0; overflow: hidden; cursor: pointer; }
+        .marquee-text { white-space: nowrap; animation: marquee 30s linear infinite; display: inline-block; }
+        @keyframes marquee { 0% { transform: translateX(100%); } 100% { transform: translateX(-100%); } }
+        .author { text-align: center; color: #808080; font-size: 14px; margin-top: 20px; }
+        .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.7); animation: fadeIn 0.2s; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        .modal-content { background: #2a2a3e; margin: 5% auto; padding: 30px; border-radius: 16px; max-width: 600px; max-height: 80vh; overflow-y: auto; animation: slideIn 0.3s; box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5); }
+        @keyframes slideIn { from { transform: translateY(-50px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        .modal-content h2 { margin-bottom: 20px; color: #00d9ff; }
+        .form-group { margin-bottom: 20px; }
+        .form-group label { display: block; margin-bottom: 8px; font-weight: 600; color: #e0e0e0; }
+        .form-group input, .form-group select { width: 100%; padding: 12px; border: 2px solid #3d5187; border-radius: 8px; background: #1a1a2e; color: #ffffff; font-size: 16px; transition: border-color 0.2s; }
+        .form-group input:focus, .form-group select:focus { outline: none; border-color: #00d9ff; }
+        .btn-group { display: flex; gap: 10px; margin-top: 25px; flex-wrap: wrap; }
+        .btn { padding: 12px 24px; border: none; border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: 600; transition: all 0.2s; flex: 1; min-width: 100px; }
+        .btn-primary { background: #00d9ff; color: #1a1a2e; }
+        .btn-primary:hover { background: #00b8e6; transform: translateY(-2px); }
+        .btn-secondary { background: #3d5187; color: #ffffff; }
+        .btn-secondary:hover { background: #4d6197; }
+        .btn-danger { background: #ff4444; color: #ffffff; }
+        .btn-danger:hover { background: #cc0000; }
+        .theme-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 12px; margin-top: 20px; }
+        .theme-option { padding: 16px; border: 2px solid #3d5187; border-radius: 12px; cursor: pointer; text-align: center; transition: all 0.2s; background: #1a1a2e; }
+        .theme-option:hover { transform: translateY(-2px); border-color: #00d9ff; }
+        .theme-option.selected { border-color: #00ff88; background: rgba(0, 255, 136, 0.1); }
+        .week-schedule { margin-top: 20px; }
+        .day-section { margin-bottom: 20px; padding: 15px; background: #16213e; border-radius: 12px; }
+        .day-title { font-size: 16px; font-weight: 600; color: #00d9ff; margin-bottom: 10px; }
+        .day-lessons { color: #e0e0e0; line-height: 1.8; white-space: pre-line; }
+        @media (max-width: 768px) { .time-display { font-size: 48px; padding: 15px 30px; } .modal-content { margin: 10px; padding: 20px; max-width: calc(100% - 20px); } .btn-group { flex-direction: column; } .btn { width: 100%; } }
+        .settings-btn { position: fixed; bottom: 20px; right: 20px; width: 50px; height: 50px; border-radius: 50%; background: #00d9ff; color: #1a1a2e; border: none; font-size: 24px; cursor: pointer; box-shadow: 0 4px 12px rgba(0, 217, 255, 0.4); transition: all 0.2s; z-index: 100; }
+        .settings-btn:hover { transform: scale(1.1) rotate(90deg); }
+        .hint-text { font-size: 12px; color: #999; margin-top: 8px; }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="school-title" id="schoolTitle" onclick="editSchoolTitle()">Назва закладу</div>
-
         <div class="logo-container">
-            <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200' viewBox='0 0 200 200'%3E%3Crect fill='%2300d9ff' width='200' height='200' rx='20'/%3E%3Ctext x='100' y='120' font-size='80' text-anchor='middle' fill='%231a1a2e' font-family='sans-serif' font-weight='bold'%3E🏫%3C/text%3E%3C/svg%3E" 
-                 class="school-logo" 
-                 id="schoolLogo" 
-                 onclick="showLogoOptions()" 
-                 alt="Логотип закладу">
+            <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200' viewBox='0 0 200 200'%3E%3Crect fill='%2300d9ff' width='200' height='200' rx='20'/%3E%3Ctext x='100' y='120' font-size='80' text-anchor='middle' fill='%231a1a2e' font-family='sans-serif' font-weight='bold'%3E🏫%3C/text%3E%3C/svg%3E" class="school-logo" id="schoolLogo" onclick="showLogoOptions()" alt="Логотип закладу">
         </div>
-
         <div class="clock-section">
             <div class="time-display" id="timeDisplay">00:00</div>
             <div class="date-display" id="dateDisplay">01 Січня 2025, Понеділок</div>
             <div class="current-event" id="currentEvent" onclick="editSilentMinute()">Уроки не тривають</div>
             <div class="schedule-title" onclick="showWeekSchedule()">📚 Розклад уроків</div>
+            <div class="schedule-title" onclick="showBellTemplates()" style="display: block; margin-top: 8px;">🔔 Шаблони дзвінків</div>
         </div>
-
         <div class="schedule-container" id="scheduleContainer">
             <div class="schedule-row" id="scheduleRow"></div>
         </div>
-
         <div class="marquee-container" onclick="editMarqueeUrl()">
             <div class="marquee-text" id="marqueeText">Завантаження повідомлення...</div>
         </div>
-
         <div class="author">Розробник Obariv by Krasovskiy</div>
     </div>
-
     <button class="settings-btn" onclick="showSettings()">⚙️</button>
-
     <script>
-        // Дані
         const themes = [
             {id: 'dark', name: 'Темна', bg: '#1a1a2e', text: '#ffffff', time: '#0c78c9', lesson: '#112951', active: '#049715', breakActive: '#a68f14'},
             {id: 'light', name: 'Світла', bg: '#f5f5f5', text: '#1a1a1a', time: '#0066cc', lesson: '#e3f2fd', active: '#4caf50', breakActive: '#ff9800'},
@@ -474,15 +102,19 @@
             {id: 'teal', name: 'Бірюзова', bg: '#0d2a2a', text: '#e0f2f1', time: '#26a69a', lesson: '#1b3d3d', active: '#009688', breakActive: '#4db6ac'},
             {id: 'indigo', name: 'Індиго', bg: '#1a1a3e', text: '#e8eaf6', time: '#5c6bc0', lesson: '#252552', active: '#3f51b5', breakActive: '#7986cb'}
         ];
-
+        const bellTemplates = [
+            {id: 'default', name: '🔔 Стандартний всі по 45 хв', lessons: {1: {start: '09:00', end: '09:45'}, 2: {start: '09:55', end: '10:40'}, 3: {start: '11:00', end: '11:45'}, 4: {start: '12:00', end: '12:45'}, 5: {start: '13:00', end: '13:45'}, 6: {start: '13:50', end: '14:35'}, 7: {start: '14:40', end: '15:25'}, 8: {start: '15:30', end: '16:15'}}},
+            {id: 'template1', name: '🔔 Шаблон 1 (короткі з 2 уроку)', lessons: {1: {start: '09:00', end: '09:45'}, 2: {start: '09:55', end: '10:25'}, 3: {start: '10:35', end: '11:05'}, 4: {start: '11:15', end: '11:45'}, 5: {start: '11:55', end: '12:25'}, 6: {start: '12:30', end: '13:00'}, 7: {start: '13:05', end: '13:35'}, 8: {start: '13:40', end: '14:10'}}},
+            {id: 'template2', name: '🔔 Шаблон 2 (короткі з 3 уроку)', lessons: {1: {start: '09:00', end: '09:45'}, 2: {start: '09:55', end: '10:40'}, 3: {start: '10:55', end: '11:25'}, 4: {start: '11:35', end: '12:05'}, 5: {start: '12:10', end: '12:40'}, 6: {start: '12:45', end: '13:15'}, 7: {start: '13:20', end: '13:50'}, 8: {start: '13:55', end: '14:25'}}},
+            {id: 'template3', name: '🔔 Шаблон 3 (всі по 30 хвилин)', lessons: {1: {start: '09:00', end: '09:30'}, 2: {start: '09:35', end: '10:05'}, 3: {start: '10:15', end: '10:45'}, 4: {start: '11:00', end: '11:30'}, 5: {start: '11:35', end: '12:05'}, 6: {start: '12:10', end: '12:40'}, 7: {start: '12:45', end: '13:15'}, 8: {start: '13:20', end: '13:50'}}}
+        ];
         const daysOfWeek = ['Понеділок', 'Вівторок', 'Середа', 'Четвер', "П'ятниця", 'Субота', 'Неділя'];
-        
         let currentTheme = themes[0];
+        let currentBellTemplate = bellTemplates[0];
         let lessonTimes = {};
         let lessonsByDay = {};
         let silentMinute = {hour: 9, minute: 0};
 
-        // Ініціалізація
         function init() {
             loadFromStorage();
             initDefaultLessonTimes();
@@ -501,6 +133,7 @@
                 const data = JSON.parse(saved);
                 document.getElementById('schoolTitle').textContent = data.schoolTitle || 'Назва закладу';
                 if (data.theme) currentTheme = themes.find(t => t.id === data.theme) || themes[0];
+                if (data.bellTemplate) currentBellTemplate = bellTemplates.find(t => t.id === data.bellTemplate) || bellTemplates[0];
                 if (data.lessonTimes) lessonTimes = data.lessonTimes;
                 if (data.lessonsByDay) lessonsByDay = data.lessonsByDay;
                 if (data.silentMinute) silentMinute = data.silentMinute;
@@ -513,6 +146,7 @@
             const data = {
                 schoolTitle: document.getElementById('schoolTitle').textContent,
                 theme: currentTheme.id,
+                bellTemplate: currentBellTemplate.id,
                 lessonTimes,
                 lessonsByDay,
                 silentMinute,
@@ -524,45 +158,30 @@
 
         function initDefaultLessonTimes() {
             if (Object.keys(lessonTimes).length === 0) {
-                lessonTimes = {
-                    1: {start: '09:00', end: '09:45'},
-                    2: {start: '09:55', end: '10:40'},
-                    3: {start: '11:00', end: '11:45'},
-                    4: {start: '12:00', end: '12:45'},
-                    5: {start: '13:00', end: '13:45'},
-                    6: {start: '13:50', end: '14:35'},
-                    7: {start: '14:40', end: '15:25'},
-                    8: {start: '15:30', end: '16:15'}
-                };
+                lessonTimes = JSON.parse(JSON.stringify(currentBellTemplate.lessons));
             }
-            
             if (!lessonsByDay || Object.keys(lessonsByDay).length === 0) {
                 lessonsByDay = {};
-                for (let day = 1; day <= 7; day++) {
-                    lessonsByDay[day] = {};
-                }
+                for (let day = 1; day <= 7; day++) { lessonsByDay[day] = {}; }
             }
         }
 
         function renderSchedule() {
             const row = document.getElementById('scheduleRow');
             row.innerHTML = '';
-
             for (let i = 1; i <= 8; i++) {
                 const time = lessonTimes[i];
+                if (!time) continue;
                 const lesson = document.createElement('div');
                 lesson.className = 'lesson-block';
                 lesson.dataset.lesson = i;
                 lesson.onclick = () => editLesson(i);
-                
                 const currentDay = new Date().getDay();
                 const day = currentDay === 0 ? 7 : currentDay;
                 const className = lessonsByDay[day]?.[i] || '';
-                
                 lesson.innerHTML = `${i}<br>${time.start}<br>${time.end}${className ? '<br>' + className : ''}`;
                 row.appendChild(lesson);
-
-                if (i < 8) {
+                if (i < 8 && lessonTimes[i + 1]) {
                     const breakBlock = document.createElement('div');
                     breakBlock.className = 'break-block';
                     const breakDuration = calculateBreakDuration(time.end, lessonTimes[i + 1].start);
@@ -583,11 +202,9 @@
             const hours = String(now.getHours()).padStart(2, '0');
             const minutes = String(now.getMinutes()).padStart(2, '0');
             document.getElementById('timeDisplay').textContent = `${hours}:${minutes}`;
-
             const options = {weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'};
             const dateStr = now.toLocaleDateString('uk-UA', options);
             document.getElementById('dateDisplay').textContent = dateStr.charAt(0).toUpperCase() + dateStr.slice(1);
-
             highlightCurrentEvent();
         }
 
@@ -597,51 +214,40 @@
             const minute = now.getMinutes();
             const currentMinutes = hour * 60 + minute;
             const currentDay = now.getDay() === 0 ? 7 : now.getDay();
-
-            document.querySelectorAll('.lesson-block, .break-block').forEach(el => {
-                el.classList.remove('active');
-            });
-
+            document.querySelectorAll('.lesson-block, .break-block').forEach(el => { el.classList.remove('active'); });
             if (hour === silentMinute.hour && minute === silentMinute.minute) {
                 document.getElementById('currentEvent').textContent = '🕯️ Хвилина мовчання';
                 document.getElementById('currentEvent').style.color = '#FFDD44';
                 return;
             }
-
             for (let i = 1; i <= 8; i++) {
                 const time = lessonTimes[i];
+                if (!time) continue;
                 const [sh, sm] = time.start.split(':').map(Number);
                 const [eh, em] = time.end.split(':').map(Number);
                 const startMin = sh * 60 + sm;
                 const endMin = eh * 60 + em;
-
                 if (currentMinutes >= startMin && currentMinutes < endMin) {
                     const lesson = document.querySelector(`[data-lesson="${i}"]`);
                     if (lesson) lesson.classList.add('active');
-                    
                     const className = lessonsByDay[currentDay]?.[i] || '';
-                    document.getElementById('currentEvent').textContent = className ? 
-                        `${i} урок • ${className}` : `Триває ${i} урок`;
+                    document.getElementById('currentEvent').textContent = className ? `${i} урок • ${className}` : `Триває ${i} урок`;
                     document.getElementById('currentEvent').style.color = currentTheme.active;
                     return;
                 }
-
-                if (i < 8) {
+                if (i < 8 && lessonTimes[i + 1]) {
                     const nextTime = lessonTimes[i + 1];
                     const [nsh, nsm] = nextTime.start.split(':').map(Number);
                     const nextStartMin = nsh * 60 + nsm;
-
                     if (currentMinutes >= endMin && currentMinutes < nextStartMin) {
                         const breaks = document.querySelectorAll('.break-block');
                         if (breaks[i - 1]) breaks[i - 1].classList.add('active');
-                        
                         document.getElementById('currentEvent').textContent = 'Триває перерва';
                         document.getElementById('currentEvent').style.color = currentTheme.breakActive;
                         return;
                     }
                 }
             }
-
             document.getElementById('currentEvent').textContent = 'Уроки не тривають';
             document.getElementById('currentEvent').style.color = currentTheme.active;
         }
@@ -651,36 +257,27 @@
             document.body.style.color = currentTheme.text;
             document.getElementById('timeDisplay').style.color = currentTheme.time;
             document.querySelectorAll('.lesson-block').forEach(el => {
-                if (!el.classList.contains('active')) {
-                    el.style.background = currentTheme.lesson;
-                }
+                if (!el.classList.contains('active')) { el.style.background = currentTheme.lesson; }
             });
             saveToStorage();
         }
 
         function loadMarqueeText() {
             const url = document.getElementById('marqueeText').dataset.url || 'https://pastebin.com/raw/9hVaYuZE';
-            fetch(url)
-                .then(r => r.text())
-                .then(text => {
-                    document.getElementById('marqueeText').textContent = text;
-                })
-                .catch(() => {
-                    document.getElementById('marqueeText').textContent = 'Вітаємо в Обарівському ліцеї! Вітаємо в Обарівському ліцеї! Вітаємо в Обарівському ліцеї!';
-                });
+            fetch(url).then(r => r.text()).then(text => {
+                document.getElementById('marqueeText').textContent = text;
+            }).catch(() => {
+                document.getElementById('marqueeText').textContent = 'Вітаємо в Обарівському ліцеї! Вітаємо в Обарівському ліцеї!';
+            });
         }
 
-        // Модальні вікна
         function showModal(title, content, buttons) {
             const modal = document.createElement('div');
             modal.className = 'modal';
             modal.style.display = 'block';
-            
             const modalContent = document.createElement('div');
             modalContent.className = 'modal-content';
-            
             modalContent.innerHTML = `<h2>${title}</h2>${content}`;
-            
             const btnGroup = document.createElement('div');
             btnGroup.className = 'btn-group';
             buttons.forEach(btn => {
@@ -693,43 +290,25 @@
                 };
                 btnGroup.appendChild(button);
             });
-            
             modalContent.appendChild(btnGroup);
             modal.appendChild(modalContent);
             document.body.appendChild(modal);
-            
-            modal.onclick = (e) => {
-                if (e.target === modal) document.body.removeChild(modal);
-            };
+            modal.onclick = (e) => { if (e.target === modal) document.body.removeChild(modal); };
         }
 
         function editSchoolTitle() {
             const current = document.getElementById('schoolTitle').textContent;
-            showModal('🏫 Назва навчального закладу', `
-                <div class="form-group">
-                    <label>Введіть назву закладу:</label>
-                    <input type="text" id="newTitle" value="${current}" placeholder="Назва закладу">
-                </div>
-            `, [
+            showModal('🏫 Назва навчального закладу', `<div class="form-group"><label>Введіть назву закладу:</label><input type="text" id="newTitle" value="${current}" placeholder="Назва закладу"></div>`, [
                 {text: 'Зберегти', class: 'btn-primary', action: () => {
                     const newTitle = document.getElementById('newTitle').value.trim();
-                    if (newTitle) {
-                        document.getElementById('schoolTitle').textContent = newTitle;
-                        saveToStorage();
-                    }
+                    if (newTitle) { document.getElementById('schoolTitle').textContent = newTitle; saveToStorage(); }
                 }},
                 {text: 'Скасувати'}
             ]);
         }
 
         function showSettings() {
-            showModal('⚙️ Налаштування', `
-                <div class="form-group">
-                    <label>🎨 Виберіть тему:</label>
-                    <div class="theme-grid" id="themeGrid"></div>
-                </div>
-            `, [{text: 'Закрити', class: 'btn-primary'}]);
-            
+            showModal('⚙️ Налаштування', `<div class="form-group"><label>🎨 Виберіть тему:</label><div class="theme-grid" id="themeGrid"></div></div>`, [{text: 'Закрити', class: 'btn-primary'}]);
             const grid = document.getElementById('themeGrid');
             themes.forEach(theme => {
                 const option = document.createElement('div');
@@ -747,42 +326,88 @@
             });
         }
 
+        function showBellTemplates() {
+            const templateOptions = bellTemplates.map(t => `<div class="theme-option ${t.id === currentBellTemplate.id ? 'selected' : ''}" data-id="${t.id}">${t.name}</div>`).join('');
+            showModal('🔔 Шаблони дзвінків', `<div class="form-group"><label>Оберіть шаблон розкладу дзвінків:</label><div class="theme-grid" id="templateGrid">${templateOptions}</div></div>`, [
+                {text: 'Редагувати поточний', class: 'btn-secondary', action: () => { showEditBellTemplate(); }},
+                {text: 'Закрити', class: 'btn-primary'}
+            ]);
+            document.querySelectorAll('#templateGrid .theme-option').forEach(option => {
+                option.onclick = () => {
+                    const templateId = option.dataset.id;
+                    currentBellTemplate = bellTemplates.find(t => t.id === templateId);
+                    applyBellTemplate(currentBellTemplate);
+                    document.querySelectorAll('#templateGrid .theme-option').forEach(el => el.classList.remove('selected'));
+                    option.classList.add('selected');
+                };
+            });
+        }
+
+        function applyBellTemplate(template) {
+            lessonTimes = JSON.parse(JSON.stringify(template.lessons));
+            saveToStorage();
+            renderSchedule();
+        }
+
+        function showEditBellTemplate() {
+            const lessonInputs = [];
+            for (let i = 1; i <= 8; i++) {
+                const time = lessonTimes[i] || {start: '', end: ''};
+                lessonInputs.push(`
+                    <div class="form-group">
+                        <label>${i} урок:</label>
+                        <div style="display: grid; grid-template-columns: 1fr auto 1fr; gap: 8px; align-items: center;">
+                            <input type="time" id="lesson${i}Start" value="${time.start}">
+                            <span>—</span>
+                            <input type="time" id="lesson${i}End" value="${time.end}">
+                        </div>
+                    </div>
+                `);
+            }
+            showModal('⏰ Редагування шаблону дзвінків', `
+                <div style="max-height: 400px; overflow-y: auto;">
+                    ${lessonInputs.join('')}
+                </div>
+                <p class="hint-text">💡 Залиште поля порожніми для уроків, які не використовуються</p>
+            `, [
+                {text: 'Зберегти', class: 'btn-primary', action: () => {
+                    const newLessons = {};
+                    for (let i = 1; i <= 8; i++) {
+                        const start = document.getElementById(`lesson${i}Start`).value;
+                        const end = document.getElementById(`lesson${i}End`).value;
+                        if (start && end) { newLessons[i] = {start, end}; }
+                    }
+                    if (Object.keys(newLessons).length > 0) {
+                        lessonTimes = newLessons;
+                        saveToStorage();
+                        renderSchedule();
+                    } else {
+                        alert('Заповніть хоча б один урок');
+                    }
+                }},
+                {text: 'Скасувати'}
+            ]);
+        }
+
         function editLesson(lessonNum) {
             const time = lessonTimes[lessonNum];
             const dayInputs = daysOfWeek.map((day, idx) => {
                 const className = lessonsByDay[idx + 1]?.[lessonNum] || '';
-                return `
-                    <div class="form-group">
-                        <label>${day}:</label>
-                        <input type="text" id="day${idx + 1}" value="${className}" placeholder="Наприклад: 3А ІНФ." maxlength="10">
-                    </div>
-                `;
+                return `<div class="form-group"><label>${day}:</label><input type="text" id="day${idx + 1}" value="${className}" placeholder="Наприклад: 3А ІНФ." maxlength="10"></div>`;
             }).join('');
-
             showModal(`Редагувати урок ${lessonNum}`, `
                 <div class="form-group">
                     <label>⏰ Час уроку:</label>
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-                        <div>
-                            <label style="font-size: 12px;">Початок:</label>
-                            <input type="time" id="startTime" value="${time.start}">
-                        </div>
-                        <div>
-                            <label style="font-size: 12px;">Закінчення:</label>
-                            <input type="time" id="endTime" value="${time.end}">
-                        </div>
+                        <div><label style="font-size: 12px;">Початок:</label><input type="time" id="startTime" value="${time.start}"></div>
+                        <div><label style="font-size: 12px;">Закінчення:</label><input type="time" id="endTime" value="${time.end}"></div>
                     </div>
                 </div>
-                <div class="form-group">
-                    <label>📚 Класи і предмети по днях тижня:</label>
-                    ${dayInputs}
-                </div>
+                <div class="form-group"><label>📚 Класи і предмети по днях тижня:</label>${dayInputs}</div>
                 <p class="hint-text">💡 Залиште порожнім день, якщо в цей день немає уроку</p>
             `, [
                 {text: 'Очистити все', class: 'btn-danger', action: () => {
-                    for (let day = 1; day <= 7; day++) {
-                        delete lessonsByDay[day][lessonNum];
-                    }
+                    for (let day = 1; day <= 7; day++) { delete lessonsByDay[day][lessonNum]; }
                     saveToStorage();
                     renderSchedule();
                 }},
@@ -791,7 +416,6 @@
                         start: document.getElementById('startTime').value,
                         end: document.getElementById('endTime').value
                     };
-                    
                     for (let day = 1; day <= 7; day++) {
                         const className = document.getElementById(`day${day}`).value.trim();
                         if (className) {
@@ -801,7 +425,6 @@
                             if (lessonsByDay[day]) delete lessonsByDay[day][lessonNum];
                         }
                     }
-                    
                     saveToStorage();
                     renderSchedule();
                 }},
@@ -813,47 +436,31 @@
             const now = new Date();
             const currentMinutes = now.getHours() * 60 + now.getMinutes();
             const currentDay = now.getDay() === 0 ? 7 : now.getDay();
-
             const scheduleHtml = daysOfWeek.map((day, idx) => {
                 const dayNum = idx + 1;
                 let lessonsText = '';
                 let hasLessons = false;
-
                 for (let lesson = 1; lesson <= 8; lesson++) {
                     const className = lessonsByDay[dayNum]?.[lesson];
                     const time = lessonTimes[lesson];
-                    
                     if (className && time) {
                         hasLessons = true;
                         const [sh, sm] = time.start.split(':').map(Number);
                         const [eh, em] = time.end.split(':').map(Number);
                         const startMin = sh * 60 + sm;
                         const endMin = eh * 60 + em;
-                        
                         const isActive = (dayNum === currentDay) && (currentMinutes >= startMin && currentMinutes < endMin);
-                        
                         lessonsText += `${isActive ? '✅ ' : ''}${lesson}. ${time.start} - ${time.end} • ${className}${isActive ? ' 🟢' : ''}\n`;
                     }
                 }
-                
                 if (!hasLessons) lessonsText = '🔭 Уроків немає';
-                
-                return `
-                    <div class="day-section">
-                        <div class="day-title">🔵 ${day.toUpperCase()}</div>
-                        <div class="day-lessons">${lessonsText.trim()}</div>
-                    </div>
-                `;
+                return `<div class="day-section"><div class="day-title">🔵 ${day.toUpperCase()}</div><div class="day-lessons">${lessonsText.trim()}</div></div>`;
             }).join('');
-
-            showModal('📚 РОЗКЛАД НА ТИЖДЕНЬ', `
-                <div class="week-schedule">${scheduleHtml}</div>
-            `, [{text: 'Закрити', class: 'btn-primary'}]);
+            showModal('📚 РОЗКЛАД НА ТИЖДЕНЬ', `<div class="week-schedule">${scheduleHtml}</div>`, [{text: 'Закрити', class: 'btn-primary'}]);
         }
 
         function editSilentMinute() {
             const current = `${String(silentMinute.hour).padStart(2, '0')}:${String(silentMinute.minute).padStart(2, '0')}`;
-            
             showModal('🕯️ Хвилина мовчання', `
                 <div class="form-group">
                     <label>Встановіть час хвилини мовчання:</label>
@@ -861,10 +468,7 @@
                     <p class="hint-text">💡 Встановіть час для щоденної хвилини мовчання</p>
                 </div>
             `, [
-                {text: 'За замовчуванням', class: 'btn-secondary', action: () => {
-                    silentMinute = {hour: 9, minute: 0};
-                    saveToStorage();
-                }},
+                {text: 'За замовчуванням', class: 'btn-secondary', action: () => { silentMinute = {hour: 9, minute: 0}; saveToStorage(); }},
                 {text: 'Зберегти', class: 'btn-primary', action: () => {
                     const timeValue = document.getElementById('silentTime').value;
                     const [h, m] = timeValue.split(':').map(Number);
@@ -877,7 +481,6 @@
 
         function editMarqueeUrl() {
             const current = document.getElementById('marqueeText').dataset.url || 'https://pastebin.com/raw/9hVaYuZE';
-            
             showModal('🔗 URL для повідомлень', `
                 <div class="form-group">
                     <label>Введіть посилання на сторінку з текстом повідомлення:</label>
@@ -905,11 +508,7 @@
         }
 
         function showLogoOptions() {
-            showModal('🖼️ Логотип закладу', `
-                <div class="form-group">
-                    <label>Оберіть опцію:</label>
-                </div>
-            `, [
+            showModal('🖼️ Логотип закладу', `<div class="form-group"><label>Оберіть опцію:</label></div>`, [
                 {text: '🖼 Завантажити зображення', class: 'btn-primary', action: () => {
                     const input = document.createElement('input');
                     input.type = 'file';
@@ -928,12 +527,7 @@
                     input.click();
                 }},
                 {text: '🔗 Завантажити за URL', class: 'btn-primary', action: () => {
-                    showModal('🔗 URL логотипу', `
-                        <div class="form-group">
-                            <label>Введіть посилання на зображення:</label>
-                            <input type="url" id="logoUrl" placeholder="https://example.com/logo.png">
-                        </div>
-                    `, [
+                    showModal('🔗 URL логотипу', `<div class="form-group"><label>Введіть посилання на зображення:</label><input type="url" id="logoUrl" placeholder="https://example.com/logo.png"></div>`, [
                         {text: 'Завантажити', class: 'btn-primary', action: () => {
                             const url = document.getElementById('logoUrl').value.trim();
                             if (url && (url.startsWith('http://') || url.startsWith('https://'))) {
@@ -954,7 +548,6 @@
             ]);
         }
 
-        // Запуск додатку
         window.addEventListener('DOMContentLoaded', init);
     </script>
 </body>
