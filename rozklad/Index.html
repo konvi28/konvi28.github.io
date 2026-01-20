@@ -19,7 +19,7 @@
         }
 
         .container {
-            max-width: 1600px;
+            max-width: 1800px;
             margin: 0 auto;
             background: white;
             border-radius: 20px;
@@ -213,96 +213,72 @@
         }
 
         .lesson-tile {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
-            padding: 10px 15px;
-            border-radius: 8px;
+            padding: 8px 12px;
+            border-radius: 6px;
             cursor: move;
             box-shadow: 0 2px 5px rgba(0,0,0,0.2);
             transition: all 0.3s;
-            font-size: 14px;
+            font-size: 12px;
             font-weight: 600;
         }
 
         .lesson-tile:hover {
             transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
         }
 
         .lesson-tile.dragging {
             opacity: 0.5;
         }
 
-        .lesson-tile.used {
-            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
-        }
-
-        .schedule-container {
-            display: flex;
-            gap: 20px;
+        .schedule-wrapper {
+            overflow-x: auto;
             margin-top: 20px;
         }
 
-        .class-schedules {
-            flex: 1;
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(800px, 1fr));
-            gap: 30px;
+        .schedule-table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 800px;
+            background: white;
         }
 
-        .class-schedule-card {
-            background: #f8f9fa;
-            padding: 20px;
-            border-radius: 12px;
-            border: 2px solid #e9ecef;
-        }
-
-        .class-schedule-header {
+        .schedule-table th {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
-            padding: 15px;
-            border-radius: 8px;
-            margin-bottom: 20px;
+            padding: 12px 8px;
             text-align: center;
             font-weight: 600;
-            font-size: 1.3em;
-        }
-
-        .schedule-grid {
-            display: grid;
-            grid-template-columns: 80px repeat(5, 1fr);
-            gap: 8px;
-        }
-
-        .schedule-header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 10px;
-            text-align: center;
-            font-weight: 600;
-            border-radius: 6px;
-            font-size: 13px;
-        }
-
-        .lesson-number {
-            background: #e9ecef;
-            padding: 10px;
-            text-align: center;
-            font-weight: 600;
-            border-radius: 6px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
             font-size: 14px;
+            border: 1px solid #dee2e6;
+        }
+
+        .schedule-table td {
+            border: 1px solid #dee2e6;
+            padding: 4px;
+            min-height: 50px;
+            height: 50px;
+            text-align: center;
+            vertical-align: middle;
+            background: #f8f9fa;
+        }
+
+        .schedule-table td.lesson-number {
+            background: #e9ecef;
+            font-weight: 600;
+            width: 40px;
         }
 
         .lesson-slot {
-            background: white;
+            min-height: 45px;
+            height: 45px;
             border: 2px dashed #dee2e6;
-            border-radius: 6px;
-            min-height: 60px;
-            padding: 5px;
+            border-radius: 4px;
             transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
         .lesson-slot.drag-over {
@@ -311,19 +287,23 @@
         }
 
         .lesson-card {
-            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
             color: white;
-            padding: 8px;
-            border-radius: 6px;
+            padding: 6px 8px;
+            border-radius: 4px;
             cursor: move;
             box-shadow: 0 2px 5px rgba(0,0,0,0.2);
             transition: all 0.3s;
+            width: 100%;
             height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
         }
 
         .lesson-card:hover {
             transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(40, 167, 69, 0.4);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
         }
 
         .lesson-card.dragging {
@@ -332,11 +312,12 @@
 
         .lesson-card-subject {
             font-weight: 600;
-            font-size: 12px;
+            font-size: 11px;
+            line-height: 1.2;
         }
 
         .lesson-card-teacher {
-            font-size: 11px;
+            font-size: 9px;
             opacity: 0.9;
             margin-top: 2px;
         }
@@ -350,6 +331,44 @@
         .empty-state-icon {
             font-size: 48px;
             margin-bottom: 20px;
+        }
+
+        .schedules-container {
+            margin-top: 20px;
+        }
+
+        .class-schedule-section {
+            margin-bottom: 40px;
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 12px;
+        }
+
+        .class-schedule-title {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            text-align: center;
+            font-weight: 600;
+            font-size: 1.3em;
+        }
+
+        .available-tiles-section {
+            margin-bottom: 30px;
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 12px;
+        }
+
+        .footer {
+            text-align: center;
+            padding: 20px;
+            background: #f8f9fa;
+            color: #6c757d;
+            font-size: 14px;
+            border-top: 1px solid #dee2e6;
         }
     </style>
 </head>
@@ -406,14 +425,30 @@
         <div class="tab-content">
             <div id="scheduleContent"></div>
         </div>
+
+        <div class="footer">
+            Розробник Obariv by Krasovskiy
+        </div>
     </div>
 
     <script>
         let classes = [];
         let subjects = [];
         let schedules = {};
-        const days = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт'];
-        const lessons = 7;
+        const days = ['Понеділок', 'Вівторок', 'Середа', 'Четвер', "П'ятниця"];
+        const lessons = 8;
+
+        const subjectColors = [
+            '#FF6B6B', '#4ECDC4', '#45B7D1', '#FFA07A', '#98D8C8',
+            '#F7DC6F', '#BB8FCE', '#85C1E2', '#F8B739', '#52B788',
+            '#E76F51', '#2A9D8F', '#E9C46A', '#F4A261', '#264653',
+            '#E63946', '#F1FAEE', '#A8DADC', '#457B9D', '#1D3557'
+        ];
+
+        function getSubjectColor(subjectId) {
+            const index = subjects.findIndex(s => s.id === subjectId);
+            return subjectColors[index % subjectColors.length];
+        }
 
         function switchTab(index) {
             const tabs = document.querySelectorAll('.tab');
@@ -548,11 +583,13 @@
                 const tiles = [];
                 for (let i = 0; i < subject.hours; i++) {
                     const isUsed = i < usedCount;
+                    const color = getSubjectColor(subject.id);
                     tiles.push(`
                         <div class="lesson-tile ${isUsed ? 'used' : ''}" 
                              draggable="${!isUsed}"
                              data-subject-id="${subject.id}"
                              data-tile-index="${i}"
+                             style="background: ${isUsed ? '#6c757d' : color}; cursor: ${isUsed ? 'not-allowed' : 'move'};"
                              ondragstart="${!isUsed ? 'dragStart(event)' : ''}"
                              ondragend="${!isUsed ? 'dragEnd(event)' : ''}">
                             ${subject.name}
@@ -604,7 +641,7 @@
             }
 
             // Генеруємо доступні плиточки
-            let tilesHtml = '<div style="margin-bottom: 30px;"><h2>Доступні уроки для розміщення</h2>';
+            let tilesHtml = '<div class="available-tiles-section"><h2>Доступні уроки для розміщення</h2>';
             
             subjects.forEach(subject => {
                 let usedCount = 0;
@@ -616,6 +653,7 @@
                 const availableCount = subject.hours - usedCount;
                 
                 if (availableCount > 0) {
+                    const color = getSubjectColor(subject.id);
                     tilesHtml += `
                         <div class="subject-item" style="margin-bottom: 15px;">
                             <div class="subject-header">
@@ -632,6 +670,7 @@
                             <div class="lesson-tile" 
                                  draggable="true"
                                  data-subject-id="${subject.id}"
+                                 style="background: ${color};"
                                  ondragstart="dragStart(event)"
                                  ondragend="dragEnd(event)">
                                 ${subject.name}
@@ -645,58 +684,78 @@
             
             tilesHtml += '</div>';
 
-            let html = tilesHtml + '<h2 style="margin-bottom: 20px;">Розклади класів</h2><div class="class-schedules">';
+            // Генеруємо розклади для кожного класу
+            let schedulesHtml = '<div class="schedules-container">';
             
             classes.forEach(cls => {
                 const schedule = schedules[cls.id];
                 
-                html += `
-                    <div class="class-schedule-card">
-                        <div class="class-schedule-header">${cls.name}</div>
-                        <div class="schedule-grid">
-                            <div class="schedule-header"></div>
+                schedulesHtml += `
+                    <div class="class-schedule-section">
+                        <div class="class-schedule-title">${cls.name}</div>
+                        <div class="schedule-wrapper">
+                            <table class="schedule-table">
+                                <thead>
+                                    <tr>
+                                        <th>Урок</th>
+                                        ${days.map(day => `<th>${day}</th>`).join('')}
+                                    </tr>
+                                </thead>
+                                <tbody>
                 `;
 
-                days.forEach(day => {
-                    html += `<div class="schedule-header">${day}</div>`;
-                });
-
                 for (let i = 1; i <= lessons; i++) {
-                    html += `<div class="lesson-number">${i}</div>`;
+                    schedulesHtml += `<tr><td class="lesson-number">${i}</td>`;
                     
                     days.forEach((day, dayIndex) => {
                         const key = `${dayIndex}-${i-1}`;
                         const lesson = schedule[key];
                         
-                        html += `
-                            <div class="lesson-slot" 
-                                 data-class-id="${cls.id}"
-                                 data-day="${dayIndex}" 
-                                 data-lesson="${i-1}"
-                                 ondragover="dragOver(event)"
-                                 ondragleave="dragLeave(event)"
-                                 ondrop="drop(event)">
-                                ${lesson ? `
-                                    <div class="lesson-card" draggable="true" 
-                                         data-subject-id="${lesson.subjectId}"
-                                         data-from-schedule="true"
-                                         data-class-id="${cls.id}"
-                                         ondragstart="dragStart(event)"
-                                         ondragend="dragEnd(event)">
-                                        <div class="lesson-card-subject">${lesson.name}</div>
-                                        <div class="lesson-card-teacher">${lesson.teacher}</div>
-                                    </div>
-                                ` : ''}
-                            </div>
-                        `;
+                        schedulesHtml += `<td>`;
+                        
+                        if (lesson) {
+                            const color = getSubjectColor(lesson.subjectId);
+                            schedulesHtml += `
+                                <div class="lesson-card" draggable="true" 
+                                     data-subject-id="${lesson.subjectId}"
+                                     data-from-schedule="true"
+                                     data-class-id="${cls.id}"
+                                     style="background: ${color};"
+                                     ondragstart="dragStart(event)"
+                                     ondragend="dragEnd(event)">
+                                    <div class="lesson-card-subject">${lesson.name}</div>
+                                    <div class="lesson-card-teacher">${lesson.teacher}</div>
+                                </div>
+                            `;
+                        } else {
+                            schedulesHtml += `
+                                <div class="lesson-slot" 
+                                     data-class-id="${cls.id}"
+                                     data-day="${dayIndex}" 
+                                     data-lesson="${i-1}"
+                                     ondragover="dragOver(event)"
+                                     ondragleave="dragLeave(event)"
+                                     ondrop="drop(event)">
+                                </div>
+                            `;
+                        }
+                        
+                        schedulesHtml += `</td>`;
                     });
+                    
+                    schedulesHtml += '</tr>';
                 }
 
-                html += '</div></div>';
+                schedulesHtml += `
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                `;
             });
 
-            html += '</div>';
-            content.innerHTML = html;
+            schedulesHtml += '</div>';
+            content.innerHTML = tilesHtml + schedulesHtml;
         }
 
         let draggedElement = null;
@@ -740,10 +799,6 @@
             const day = slot.dataset.day;
             const lesson = slot.dataset.lesson;
             const key = `${day}-${lesson}`;
-            
-            if (slot.querySelector('.lesson-card')) {
-                return;
-            }
             
             const schedule = schedules[classId];
             
