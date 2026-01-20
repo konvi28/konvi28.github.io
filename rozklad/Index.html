@@ -684,32 +684,40 @@
             
             tilesHtml += '</div>';
 
-            // Генеруємо розклади для кожного класу
+            // Генеруємо один розклад з класами як колонками
             let schedulesHtml = '<div class="schedules-container">';
             
-            classes.forEach(cls => {
-                const schedule = schedules[cls.id];
-                
-                schedulesHtml += `
-                    <div class="class-schedule-section">
-                        <div class="class-schedule-title">${cls.name}</div>
-                        <div class="schedule-wrapper">
-                            <table class="schedule-table">
-                                <thead>
-                                    <tr>
-                                        <th>Урок</th>
-                                        ${days.map(day => `<th>${day}</th>`).join('')}
-                                    </tr>
-                                </thead>
-                                <tbody>
-                `;
+            schedulesHtml += `
+                <div class="class-schedule-section">
+                    <div class="class-schedule-title">Розклад уроків</div>
+                    <div class="schedule-wrapper">
+                        <table class="schedule-table">
+                            <thead>
+                                <tr>
+                                    <th>День</th>
+                                    <th>Урок</th>
+                                    ${classes.map(cls => `<th>${cls.name}</th>`).join('')}
+                                </tr>
+                            </thead>
+                            <tbody>
+            `;
 
+            days.forEach((day, dayIndex) => {
                 for (let i = 1; i <= lessons; i++) {
-                    schedulesHtml += `<tr><td class="lesson-number">${i}</td>`;
+                    schedulesHtml += `<tr>`;
                     
-                    days.forEach((day, dayIndex) => {
+                    // День тижня (об'єднуємо клітинки для одного дня)
+                    if (i === 1) {
+                        schedulesHtml += `<td rowspan="${lessons}" style="font-weight: 600; background: #e9ecef; vertical-align: middle;">${day}</td>`;
+                    }
+                    
+                    // Номер уроку
+                    schedulesHtml += `<td class="lesson-number">${i}</td>`;
+                    
+                    // Для кожного класу
+                    classes.forEach(cls => {
                         const key = `${dayIndex}-${i-1}`;
-                        const lesson = schedule[key];
+                        const lesson = schedules[cls.id][key];
                         
                         schedulesHtml += `<td>`;
                         
@@ -745,14 +753,14 @@
                     
                     schedulesHtml += '</tr>';
                 }
-
-                schedulesHtml += `
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                `;
             });
+
+            schedulesHtml += `
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            `;
 
             schedulesHtml += '</div>';
             content.innerHTML = tilesHtml + schedulesHtml;
