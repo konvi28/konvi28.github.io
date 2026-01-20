@@ -432,9 +432,69 @@
     </div>
 
     <script>
-        let classes = [];
-        let subjects = [];
-        let schedules = {};
+        let classes = [
+            {id: 1, name: '5-А'},
+            {id: 2, name: '5-Б'},
+            {id: 3, name: '6-А'},
+            {id: 4, name: '6-Б'},
+            {id: 5, name: '7-А'}
+        ];
+        let subjects = [
+            {id: 101, name: 'Математика', teacher: 'Іванова О.П.', hours: 15},
+            {id: 102, name: 'Українська мова', teacher: 'Петренко М.І.', hours: 12},
+            {id: 103, name: 'Англійська мова', teacher: 'Сидоренко В.В.', hours: 10},
+            {id: 104, name: 'Історія', teacher: 'Коваленко Т.С.', hours: 8},
+            {id: 105, name: 'Фізика', teacher: 'Шевченко А.М.', hours: 10},
+            {id: 106, name: 'Біологія', teacher: 'Мельник Л.П.', hours: 8},
+            {id: 107, name: 'Географія', teacher: 'Бондаренко І.О.', hours: 6},
+            {id: 108, name: 'Фізкультура', teacher: 'Морозов С.В.', hours: 10},
+            {id: 109, name: 'Інформатика', teacher: 'Ткаченко Н.А.', hours: 8},
+            {id: 110, name: 'Хімія', teacher: 'Savchenko D.K.', hours: 6}
+        ];
+        let schedules = {
+            1: {
+                '0-0': {subjectId: 101, name: 'Математика', teacher: 'Іванова О.П.'},
+                '0-1': {subjectId: 102, name: 'Українська мова', teacher: 'Петренко М.І.'},
+                '0-2': {subjectId: 103, name: 'Англійська мова', teacher: 'Сидоренко В.В.'},
+                '0-3': {subjectId: 104, name: 'Історія', teacher: 'Коваленко Т.С.'},
+                '1-0': {subjectId: 105, name: 'Фізика', teacher: 'Шевченко А.М.'},
+                '1-1': {subjectId: 106, name: 'Біологія', teacher: 'Мельник Л.П.'},
+                '1-2': {subjectId: 101, name: 'Математика', teacher: 'Іванова О.П.'},
+                '2-0': {subjectId: 107, name: 'Географія', teacher: 'Бондаренко І.О.'},
+                '2-1': {subjectId: 108, name: 'Фізкультура', teacher: 'Морозов С.В.'},
+            },
+            2: {
+                '0-0': {subjectId: 102, name: 'Українська мова', teacher: 'Петренко М.І.'},
+                '0-1': {subjectId: 101, name: 'Математика', teacher: 'Іванова О.П.'},
+                '0-2': {subjectId: 109, name: 'Інформатика', teacher: 'Ткаченко Н.А.'},
+                '1-0': {subjectId: 103, name: 'Англійська мова', teacher: 'Сидоренко В.В.'},
+                '1-1': {subjectId: 104, name: 'Історія', teacher: 'Коваленко Т.С.'},
+                '2-0': {subjectId: 108, name: 'Фізкультура', teacher: 'Морозов С.В.'},
+                '2-1': {subjectId: 106, name: 'Біологія', teacher: 'Мельник Л.П.'},
+            },
+            3: {
+                '0-0': {subjectId: 105, name: 'Фізика', teacher: 'Шевченко А.М.'},
+                '0-1': {subjectId: 101, name: 'Математика', teacher: 'Іванова О.П.'},
+                '0-2': {subjectId: 102, name: 'Українська мова', teacher: 'Петренко М.І.'},
+                '1-0': {subjectId: 110, name: 'Хімія', teacher: 'Savchenko D.K.'},
+                '1-1': {subjectId: 103, name: 'Англійська мова', teacher: 'Сидоренко В.В.'},
+                '2-0': {subjectId: 104, name: 'Історія', teacher: 'Коваленко Т.С.'},
+            },
+            4: {
+                '0-0': {subjectId: 103, name: 'Англійська мова', teacher: 'Сидоренко В.В.'},
+                '0-1': {subjectId: 105, name: 'Фізика', teacher: 'Шевченко А.М.'},
+                '1-0': {subjectId: 101, name: 'Математика', teacher: 'Іванова О.П.'},
+                '1-1': {subjectId: 108, name: 'Фізкультура', teacher: 'Морозов С.В.'},
+                '2-0': {subjectId: 109, name: 'Інформатика', teacher: 'Ткаченко Н.А.'},
+            },
+            5: {
+                '0-0': {subjectId: 104, name: 'Історія', teacher: 'Коваленко Т.С.'},
+                '0-1': {subjectId: 110, name: 'Хімія', teacher: 'Savchenko D.K.'},
+                '1-0': {subjectId: 106, name: 'Біологія', teacher: 'Мельник Л.П.'},
+                '1-1': {subjectId: 101, name: 'Математика', teacher: 'Іванова О.П.'},
+                '2-0': {subjectId: 103, name: 'Англійська мова', teacher: 'Сидоренко В.В.'},
+            }
+        };
         const days = ['Понеділок', 'Вівторок', 'Середа', 'Четвер', "П'ятниця"];
         const lessons = 8;
 
