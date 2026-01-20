@@ -1,0 +1,772 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Розклад уроків</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .tabs {
+            display: flex;
+            background: #f8f9fa;
+            border-bottom: 2px solid #e9ecef;
+        }
+
+        .tab {
+            flex: 1;
+            padding: 20px;
+            text-align: center;
+            cursor: pointer;
+            font-weight: 600;
+            color: #6c757d;
+            transition: all 0.3s;
+            border: none;
+            background: none;
+            font-size: 16px;
+        }
+
+        .tab:hover {
+            background: #e9ecef;
+        }
+
+        .tab.active {
+            color: #667eea;
+            background: white;
+            border-bottom: 3px solid #667eea;
+        }
+
+        .tab-content {
+            display: none;
+            padding: 30px;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .btn {
+            padding: 12px 30px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-danger {
+            background: #dc3545;
+            color: white;
+            padding: 8px 16px;
+            font-size: 14px;
+        }
+
+        .btn-danger:hover {
+            background: #c82333;
+        }
+
+        .class-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .class-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            position: relative;
+        }
+
+        .class-card h3 {
+            margin-bottom: 10px;
+            font-size: 1.5em;
+        }
+
+        .class-card-actions {
+            margin-top: 15px;
+        }
+
+        .subject-list {
+            margin-top: 30px;
+        }
+
+        .subject-item {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            border: 2px solid #e9ecef;
+        }
+
+        .subject-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .subject-info {
+            flex: 1;
+        }
+
+        .subject-name {
+            font-weight: 600;
+            color: #333;
+            font-size: 18px;
+        }
+
+        .subject-teacher {
+            color: #6c757d;
+            font-size: 14px;
+            margin-top: 5px;
+        }
+
+        .subject-hours {
+            background: #667eea;
+            color: white;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-weight: 600;
+            margin-right: 10px;
+        }
+
+        .tiles-container {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-top: 10px;
+            padding: 10px;
+            background: white;
+            border-radius: 8px;
+        }
+
+        .lesson-tile {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 10px 15px;
+            border-radius: 8px;
+            cursor: move;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            transition: all 0.3s;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .lesson-tile:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .lesson-tile.dragging {
+            opacity: 0.5;
+        }
+
+        .lesson-tile.used {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+        }
+
+        .schedule-container {
+            display: flex;
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .class-schedules {
+            flex: 1;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(800px, 1fr));
+            gap: 30px;
+        }
+
+        .class-schedule-card {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 12px;
+            border: 2px solid #e9ecef;
+        }
+
+        .class-schedule-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            text-align: center;
+            font-weight: 600;
+            font-size: 1.3em;
+        }
+
+        .schedule-grid {
+            display: grid;
+            grid-template-columns: 80px repeat(5, 1fr);
+            gap: 8px;
+        }
+
+        .schedule-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 10px;
+            text-align: center;
+            font-weight: 600;
+            border-radius: 6px;
+            font-size: 13px;
+        }
+
+        .lesson-number {
+            background: #e9ecef;
+            padding: 10px;
+            text-align: center;
+            font-weight: 600;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+        }
+
+        .lesson-slot {
+            background: white;
+            border: 2px dashed #dee2e6;
+            border-radius: 6px;
+            min-height: 60px;
+            padding: 5px;
+            transition: all 0.3s;
+        }
+
+        .lesson-slot.drag-over {
+            background: #e7f1ff;
+            border-color: #667eea;
+        }
+
+        .lesson-card {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            color: white;
+            padding: 8px;
+            border-radius: 6px;
+            cursor: move;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            transition: all 0.3s;
+            height: 100%;
+        }
+
+        .lesson-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(40, 167, 69, 0.4);
+        }
+
+        .lesson-card.dragging {
+            opacity: 0.5;
+        }
+
+        .lesson-card-subject {
+            font-weight: 600;
+            font-size: 12px;
+        }
+
+        .lesson-card-teacher {
+            font-size: 11px;
+            opacity: 0.9;
+            margin-top: 2px;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #6c757d;
+        }
+
+        .empty-state-icon {
+            font-size: 48px;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📚 Розклад уроків</h1>
+            <p>Створіть ідеальний розклад для вашої школи</p>
+        </div>
+
+        <div class="tabs">
+            <button class="tab active" onclick="switchTab(0)">Класи</button>
+            <button class="tab" onclick="switchTab(1)">Предмети і вчителі</button>
+            <button class="tab" onclick="switchTab(2)">Розклади</button>
+        </div>
+
+        <!-- Вкладка Класи -->
+        <div class="tab-content active">
+            <h2>Додати клас</h2>
+            <form id="classForm" onsubmit="addClass(event)">
+                <div class="form-group">
+                    <label>Назва класу</label>
+                    <input type="text" id="className" required placeholder="Наприклад: 5-А">
+                </div>
+                <button type="submit" class="btn btn-primary">Додати клас</button>
+            </form>
+
+            <div class="class-list" id="classList"></div>
+        </div>
+
+        <!-- Вкладка Предмети -->
+        <div class="tab-content">
+            <h2>Додати предмет і вчителя</h2>
+            <form id="subjectForm" onsubmit="addSubject(event)">
+                <div class="form-group">
+                    <label>Назва предмету</label>
+                    <input type="text" id="subjectName" required placeholder="Наприклад: Математика">
+                </div>
+                <div class="form-group">
+                    <label>Вчитель</label>
+                    <input type="text" id="teacherName" required placeholder="Наприклад: Іванов І.І.">
+                </div>
+                <div class="form-group">
+                    <label>Кількість годин (плиточок)</label>
+                    <input type="number" id="hoursPerWeek" min="1" max="35" required placeholder="Наприклад: 5">
+                </div>
+                <button type="submit" class="btn btn-primary">Додати предмет</button>
+            </form>
+
+            <div class="subject-list" id="subjectList"></div>
+        </div>
+
+        <!-- Вкладка Розклади -->
+        <div class="tab-content">
+            <div id="scheduleContent"></div>
+        </div>
+    </div>
+
+    <script>
+        let classes = [];
+        let subjects = [];
+        let schedules = {};
+        const days = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт'];
+        const lessons = 7;
+
+        function switchTab(index) {
+            const tabs = document.querySelectorAll('.tab');
+            const contents = document.querySelectorAll('.tab-content');
+            
+            tabs.forEach((tab, i) => {
+                tab.classList.toggle('active', i === index);
+            });
+            
+            contents.forEach((content, i) => {
+                content.classList.toggle('active', i === index);
+            });
+
+            if (index === 1) {
+                renderSubjects();
+            } else if (index === 2) {
+                renderSchedules();
+            }
+        }
+
+        function addClass(e) {
+            e.preventDefault();
+            
+            const className = document.getElementById('className').value;
+            const classId = Date.now();
+            
+            classes.push({
+                id: classId,
+                name: className
+            });
+            
+            schedules[classId] = {};
+            
+            renderClasses();
+            document.getElementById('classForm').reset();
+        }
+
+        function removeClass(classId) {
+            if (!confirm('Ви впевнені? Розклад цього класу буде видалений.')) {
+                return;
+            }
+            
+            classes = classes.filter(c => c.id !== classId);
+            delete schedules[classId];
+            
+            renderClasses();
+        }
+
+        function renderClasses() {
+            const list = document.getElementById('classList');
+            
+            if (classes.length === 0) {
+                list.innerHTML = `
+                    <div class="empty-state" style="grid-column: 1/-1;">
+                        <div class="empty-state-icon">🏫</div>
+                        <h3>Поки що немає класів</h3>
+                        <p>Додайте перший клас, щоб почати</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            list.innerHTML = classes.map(cls => {
+                const lessonsCount = Object.keys(schedules[cls.id] || {}).length;
+                return `
+                    <div class="class-card">
+                        <h3>${cls.name}</h3>
+                        <p>${lessonsCount} уроків у розкладі</p>
+                        <div class="class-card-actions">
+                            <button class="btn btn-danger" onclick="removeClass(${cls.id})">Видалити</button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function addSubject(e) {
+            e.preventDefault();
+            
+            const subject = {
+                id: Date.now(),
+                name: document.getElementById('subjectName').value,
+                teacher: document.getElementById('teacherName').value,
+                hours: parseInt(document.getElementById('hoursPerWeek').value)
+            };
+            
+            subjects.push(subject);
+            renderSubjects();
+            document.getElementById('subjectForm').reset();
+        }
+
+        function removeSubject(subjectId) {
+            if (!confirm('Ви впевнені? Всі уроки цього предмету будуть видалені з усіх розкладів.')) {
+                return;
+            }
+            
+            subjects = subjects.filter(s => s.id !== subjectId);
+            
+            classes.forEach(cls => {
+                const schedule = schedules[cls.id];
+                Object.keys(schedule).forEach(key => {
+                    if (schedule[key] && schedule[key].subjectId === subjectId) {
+                        delete schedule[key];
+                    }
+                });
+            });
+            
+            renderSubjects();
+        }
+
+        function renderSubjects() {
+            const list = document.getElementById('subjectList');
+            
+            if (subjects.length === 0) {
+                list.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">📝</div>
+                        <h3>Поки що немає предметів</h3>
+                        <p>Додайте перший предмет</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            list.innerHTML = '<h3 style="margin-top: 30px;">Список предметів і плиточки</h3>' + subjects.map(subject => {
+                let usedCount = 0;
+                classes.forEach(cls => {
+                    const schedule = schedules[cls.id] || {};
+                    usedCount += Object.values(schedule).filter(s => s && s.subjectId === subject.id).length;
+                });
+                
+                const tiles = [];
+                for (let i = 0; i < subject.hours; i++) {
+                    const isUsed = i < usedCount;
+                    tiles.push(`
+                        <div class="lesson-tile ${isUsed ? 'used' : ''}" 
+                             draggable="${!isUsed}"
+                             data-subject-id="${subject.id}"
+                             data-tile-index="${i}"
+                             ondragstart="${!isUsed ? 'dragStart(event)' : ''}"
+                             ondragend="${!isUsed ? 'dragEnd(event)' : ''}">
+                            ${subject.name}
+                        </div>
+                    `);
+                }
+                
+                return `
+                    <div class="subject-item">
+                        <div class="subject-header">
+                            <div class="subject-info">
+                                <div class="subject-name">${subject.name}</div>
+                                <div class="subject-teacher">Вчитель: ${subject.teacher}</div>
+                            </div>
+                            <span class="subject-hours">${usedCount}/${subject.hours} год</span>
+                            <button class="btn btn-danger" onclick="removeSubject(${subject.id})">Видалити</button>
+                        </div>
+                        <div class="tiles-container">
+                            ${tiles.join('')}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function renderSchedules() {
+            const content = document.getElementById('scheduleContent');
+            
+            if (classes.length === 0) {
+                content.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">⚠️</div>
+                        <h3>Спочатку додайте класи</h3>
+                        <p>Перейдіть на вкладку "Класи" та додайте класи</p>
+                    </div>
+                `;
+                return;
+            }
+
+            if (subjects.length === 0) {
+                content.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">⚠️</div>
+                        <h3>Спочатку додайте предмети</h3>
+                        <p>Перейдіть на вкладку "Предмети і вчителі" та додайте предмети</p>
+                    </div>
+                `;
+                return;
+            }
+
+            // Генеруємо доступні плиточки
+            let tilesHtml = '<div style="margin-bottom: 30px;"><h2>Доступні уроки для розміщення</h2>';
+            
+            subjects.forEach(subject => {
+                let usedCount = 0;
+                classes.forEach(cls => {
+                    const schedule = schedules[cls.id] || {};
+                    usedCount += Object.values(schedule).filter(s => s && s.subjectId === subject.id).length;
+                });
+                
+                const availableCount = subject.hours - usedCount;
+                
+                if (availableCount > 0) {
+                    tilesHtml += `
+                        <div class="subject-item" style="margin-bottom: 15px;">
+                            <div class="subject-header">
+                                <div class="subject-info">
+                                    <div class="subject-name">${subject.name}</div>
+                                    <div class="subject-teacher">Вчитель: ${subject.teacher} • Доступно: ${availableCount} з ${subject.hours}</div>
+                                </div>
+                            </div>
+                            <div class="tiles-container">
+                    `;
+                    
+                    for (let i = 0; i < availableCount; i++) {
+                        tilesHtml += `
+                            <div class="lesson-tile" 
+                                 draggable="true"
+                                 data-subject-id="${subject.id}"
+                                 ondragstart="dragStart(event)"
+                                 ondragend="dragEnd(event)">
+                                ${subject.name}
+                            </div>
+                        `;
+                    }
+                    
+                    tilesHtml += '</div></div>';
+                }
+            });
+            
+            tilesHtml += '</div>';
+
+            let html = tilesHtml + '<h2 style="margin-bottom: 20px;">Розклади класів</h2><div class="class-schedules">';
+            
+            classes.forEach(cls => {
+                const schedule = schedules[cls.id];
+                
+                html += `
+                    <div class="class-schedule-card">
+                        <div class="class-schedule-header">${cls.name}</div>
+                        <div class="schedule-grid">
+                            <div class="schedule-header"></div>
+                `;
+
+                days.forEach(day => {
+                    html += `<div class="schedule-header">${day}</div>`;
+                });
+
+                for (let i = 1; i <= lessons; i++) {
+                    html += `<div class="lesson-number">${i}</div>`;
+                    
+                    days.forEach((day, dayIndex) => {
+                        const key = `${dayIndex}-${i-1}`;
+                        const lesson = schedule[key];
+                        
+                        html += `
+                            <div class="lesson-slot" 
+                                 data-class-id="${cls.id}"
+                                 data-day="${dayIndex}" 
+                                 data-lesson="${i-1}"
+                                 ondragover="dragOver(event)"
+                                 ondragleave="dragLeave(event)"
+                                 ondrop="drop(event)">
+                                ${lesson ? `
+                                    <div class="lesson-card" draggable="true" 
+                                         data-subject-id="${lesson.subjectId}"
+                                         data-from-schedule="true"
+                                         data-class-id="${cls.id}"
+                                         ondragstart="dragStart(event)"
+                                         ondragend="dragEnd(event)">
+                                        <div class="lesson-card-subject">${lesson.name}</div>
+                                        <div class="lesson-card-teacher">${lesson.teacher}</div>
+                                    </div>
+                                ` : ''}
+                            </div>
+                        `;
+                    });
+                }
+
+                html += '</div></div>';
+            });
+
+            html += '</div>';
+            content.innerHTML = html;
+        }
+
+        let draggedElement = null;
+        let draggedSubjectId = null;
+        let fromSchedule = false;
+        let originalSlot = null;
+
+        function dragStart(e) {
+            draggedElement = e.target;
+            draggedSubjectId = parseInt(e.target.dataset.subjectId);
+            fromSchedule = e.target.dataset.fromSchedule === 'true';
+            
+            if (fromSchedule) {
+                originalSlot = e.target.parentElement;
+            }
+            
+            e.target.classList.add('dragging');
+            e.dataTransfer.effectAllowed = 'move';
+        }
+
+        function dragEnd(e) {
+            e.target.classList.remove('dragging');
+        }
+
+        function dragOver(e) {
+            e.preventDefault();
+            e.currentTarget.classList.add('drag-over');
+            e.dataTransfer.dropEffect = 'move';
+        }
+
+        function dragLeave(e) {
+            e.currentTarget.classList.remove('drag-over');
+        }
+
+        function drop(e) {
+            e.preventDefault();
+            e.currentTarget.classList.remove('drag-over');
+            
+            const slot = e.currentTarget;
+            const classId = parseInt(slot.dataset.classId);
+            const day = slot.dataset.day;
+            const lesson = slot.dataset.lesson;
+            const key = `${day}-${lesson}`;
+            
+            if (slot.querySelector('.lesson-card')) {
+                return;
+            }
+            
+            const schedule = schedules[classId];
+            
+            if (fromSchedule && originalSlot) {
+                const oldClassId = parseInt(originalSlot.dataset.classId);
+                const oldDay = originalSlot.dataset.day;
+                const oldLesson = originalSlot.dataset.lesson;
+                const oldKey = `${oldDay}-${oldLesson}`;
+                delete schedules[oldClassId][oldKey];
+            }
+            
+            const subject = subjects.find(s => s.id === draggedSubjectId);
+            schedule[key] = {
+                subjectId: subject.id,
+                name: subject.name,
+                teacher: subject.teacher
+            };
+            
+            renderSchedules();
+            renderSubjects();
+        }
+
+        renderClasses();
+    </script>
+</body>
+</html>
