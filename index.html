@@ -1552,34 +1552,36 @@
         <button class="header-filter-toggle" id="headerFilterToggle" onclick="toggleHeaderFilter()">▼</button>
     </header>
 
-    <!-- Search & Filter Bar (home only) -->
-    <div class="search-filter-bar" id="searchFilterBar">
-        <div class="search-filter-inner">
-            <div class="search-box-row">
-                <input type="text" class="search-input-main" id="homeSearchInput" autocomplete="off" placeholder="Пошук за назвою, текстом або хештегом..." onkeypress="if(event.key==='Enter') runHomeSearch()">
-                <button class="search-btn-main" onclick="runHomeSearch()">🔍 Знайти</button>
-                <button class="search-clear-btn" id="homeClearBtn" onclick="clearHomeSearch()">✕ Скинути</button>
-            </div>
-            <div class="search-options-row">
-                <label class="search-option-label">
-                    <input type="radio" name="homeSearchType" value="all" checked> Всюди
-                </label>
-                <label class="search-option-label">
-                    <input type="radio" name="homeSearchType" value="title"> За назвою
-                </label>
-                <label class="search-option-label">
-                    <input type="radio" name="homeSearchType" value="content"> За текстом
-                </label>
-            </div>
-            <div class="profile-hashtag-scroll" id="homeHashtagChips" style="display:none;">
-                <span class="home-hashtag-filter-label">#️⃣ Хештеги:</span>
-                <div id="homeHashtagChipsList" style="display:flex; gap:0.5rem; flex-wrap:nowrap;"></div>
+    <!-- Search & Filter Bar (home only) — inside sticky zone -->
+    <div id="homeSearchSticky" style="position:sticky; top: var(--header-height, 60px); z-index:199; background:var(--bg-card);">
+        <div class="search-filter-bar" id="searchFilterBar">
+            <div class="search-filter-inner">
+                <div class="search-box-row">
+                    <input type="text" class="search-input-main" id="homeSearchInput" autocomplete="off" placeholder="Пошук за назвою, текстом або хештегом..." onkeypress="if(event.key==='Enter') runHomeSearch()">
+                    <button class="search-btn-main" onclick="runHomeSearch()">🔍 Знайти</button>
+                    <button class="search-clear-btn" id="homeClearBtn" onclick="clearHomeSearch()">✕ Скинути</button>
+                </div>
+                <div class="search-options-row">
+                    <label class="search-option-label">
+                        <input type="radio" name="homeSearchType" value="all" checked> Всюди
+                    </label>
+                    <label class="search-option-label">
+                        <input type="radio" name="homeSearchType" value="title"> За назвою
+                    </label>
+                    <label class="search-option-label">
+                        <input type="radio" name="homeSearchType" value="content"> За текстом
+                    </label>
+                </div>
+                <div class="profile-hashtag-scroll" id="homeHashtagChips" style="display:none;">
+                    <span class="home-hashtag-filter-label">#️⃣ Хештеги:</span>
+                    <div id="homeHashtagChipsList" style="display:flex; gap:0.5rem; flex-wrap:nowrap;"></div>
+                </div>
             </div>
         </div>
-    </div>
-    <!-- Toggle arrow strip — always visible -->
-    <div class="search-bar-toggle-wrap" id="searchBarToggleWrap">
-        <button class="search-bar-toggle" id="searchBarToggle" onclick="toggleSearchBar()">▼</button>
+        <!-- Toggle arrow -->
+        <div class="search-bar-toggle-wrap" id="searchBarToggleWrap">
+            <button class="search-bar-toggle" id="searchBarToggle" onclick="toggleSearchBar()">▼</button>
+        </div>
     </div>
     <!-- Search results banner -->
     <div class="search-results-banner" id="homeSearchResultsBanner"></div>
@@ -3901,8 +3903,8 @@
 
         // Внутрішні версії функцій навігації (без оновлення URL)
         function setHomeSearchVisible(visible) {
-            document.getElementById('searchFilterBar').style.display = visible ? '' : 'none';
-            document.getElementById('searchBarToggleWrap').style.display = visible ? '' : 'none';
+            const sticky = document.getElementById('homeSearchSticky');
+            if (sticky) sticky.style.display = visible ? '' : 'none';
             document.getElementById('homeSearchResultsBanner').style.display = visible ? (window.homeSearchQuery || window.homeHashtagFilter ? 'block' : 'none') : 'none';
         }
 
@@ -4034,6 +4036,13 @@
 
         // Завантажуємо правильну сторінку при старті
         window.addEventListener('load', () => {
+            // Встановлюємо sticky top = висота шапки
+            const header = document.querySelector('.platform-header');
+            const sticky = document.getElementById('homeSearchSticky');
+            if (header && sticky) {
+                const h = header.offsetHeight;
+                sticky.style.top = h + 'px';
+            }
             handleRoute();
         });
 
