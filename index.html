@@ -2196,27 +2196,50 @@
         }
 
         // Load Users List
+        function renderRandomPoets() {
+            const container = document.getElementById('usersList');
+            if (!container || window.allUsers.length === 0) return;
+
+            const shuffled = [...window.allUsers].sort(() => 0.5 - Math.random()).slice(0, 2);
+
+            container.style.transition = 'opacity 0.4s ease';
+            container.style.opacity = '0';
+
+            setTimeout(() => {
+                container.innerHTML = shuffled.map(user => `
+                    <div class="user-item" style="cursor: pointer;" onclick="showUserProfile('${user.id}')">
+                        ${user.avatarUrl
+                            ? `<img src="${user.avatarUrl}" alt="${user.name}" style="width:38px;height:38px;border-radius:50%;object-fit:cover;flex-shrink:0;border:2px solid var(--accent);">`
+                            : `<div class="user-avatar">${user.name.charAt(0).toUpperCase()}</div>`
+                        }
+                        <div class="user-info">
+                            <div class="user-name">${user.name}</div>
+                            <div class="user-stats">📝 ${user.postsCount || 0} публікацій</div>
+                            ${user.bio ? `<div style="font-size: 0.82rem; color: var(--text-lighter); font-style: italic; margin-top: 0.2rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 200px;">${user.bio}</div>` : ''}
+                        </div>
+                    </div>
+                `).join('');
+                container.style.opacity = '1';
+            }, 400);
+        }
+
         function loadUsersList() {
             const container = document.getElementById('usersList');
-            
             if (window.allUsers.length === 0) {
                 container.innerHTML = '<p style="color: var(--text-light);">Немає користувачів</p>';
                 return;
             }
 
-            container.innerHTML = window.allUsers.slice(0, 5).map(user => `
-                <div class="user-item" style="cursor: pointer;" onclick="showUserProfile('${user.id}')">
-                    ${user.avatarUrl
-                        ? `<img src="${user.avatarUrl}" alt="${user.name}" style="width:38px;height:38px;border-radius:50%;object-fit:cover;flex-shrink:0;border:2px solid var(--accent);">`
-                        : `<div class="user-avatar">${user.name.charAt(0).toUpperCase()}</div>`
-                    }
-                    <div class="user-info">
-                        <div class="user-name">${user.name}</div>
-                        <div class="user-stats">📝 ${user.postsCount || 0} публікацій</div>
-                        ${user.bio ? `<div style="font-size: 0.82rem; color: var(--text-lighter); font-style: italic; margin-top: 0.2rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 200px;">${user.bio}</div>` : ''}
-                    </div>
-                </div>
-            `).join('');
+            renderRandomPoets();
+
+            // Очищуємо попередній інтервал якщо є
+            if (window._poetsInterval) clearInterval(window._poetsInterval);
+            window._poetsInterval = setInterval(() => {
+                // Міняємо тільки якщо блок видимий
+                if (document.getElementById('usersList')?.offsetParent !== null) {
+                    renderRandomPoets();
+                }
+            }, 6000);
         }
 
         // Helper function
