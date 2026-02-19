@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Поетична платформа KonVi</title>
+    <script>
+        // Зберігаємо повний шлях (наприклад /post/ABC123) і редиректимо на головну
+        // index.html прочитає це значення і покаже потрібну сторінку
+        sessionStorage.setItem('spa_redirect', window.location.pathname + window.location.search);
+        window.location.replace('/');
+    </script>
+</head>
+<body></body>
+</html>
