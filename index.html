@@ -8,6 +8,18 @@
     <link rel="apple-touch-icon" href="logo.webp">
     <title>Поетична платформа - Спільнота поетів</title>
 
+    <!-- GitHub Pages SPA: відновлюємо URL після редиректу через 404.html -->
+    <script>
+        (function() {
+            var redirect = sessionStorage.getItem('spa_redirect');
+            if (redirect) {
+                sessionStorage.removeItem('spa_redirect');
+                // Відновлюємо шлях без замінення в history
+                window.history.replaceState(null, '', redirect);
+            }
+        })();
+    </script>
+
     <!-- SEO -->
     <meta name="description" content="Поетична платформа KonVi — спільнота українських поетів. Читайте вірші та думки авторів.">
     <meta name="robots" content="index, follow">
