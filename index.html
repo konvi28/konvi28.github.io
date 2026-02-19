@@ -955,31 +955,24 @@
         /* ===== HOME SEARCH BAR ===== */
         .search-filter-bar {
             background: var(--bg-card);
-            border-bottom: 1px solid var(--border);
             max-height: 0;
             overflow: hidden;
             opacity: 0;
             transition: max-height 0.35s ease, opacity 0.35s ease;
-            position: relative;
         }
         .search-filter-bar.active {
             max-height: 400px;
             opacity: 1;
-            padding: 1rem 0 2rem;
-            overflow: visible;
+            padding: 1rem 0;
         }
+        /* Toggle button strip — always visible, sits right below search bar */
         .search-bar-toggle-wrap {
-            position: absolute;
-            bottom: -14px;
-            left: 0;
-            right: 0;
+            background: var(--bg-card);
+            border-bottom: 1px solid var(--border);
             text-align: center;
-            z-index: 20;
-            line-height: 0;
-            pointer-events: none;
+            padding: 4px 0 6px;
         }
         .search-bar-toggle {
-            pointer-events: all;
             display: inline-flex;
             align-items: center;
             justify-content: center;
@@ -1562,13 +1555,11 @@
     <!-- Search & Filter Bar (home only) -->
     <div class="search-filter-bar" id="searchFilterBar">
         <div class="search-filter-inner">
-            <!-- Search box -->
             <div class="search-box-row">
                 <input type="text" class="search-input-main" id="homeSearchInput" autocomplete="off" placeholder="Пошук за назвою, текстом або хештегом..." onkeypress="if(event.key==='Enter') runHomeSearch()">
                 <button class="search-btn-main" onclick="runHomeSearch()">🔍 Знайти</button>
                 <button class="search-clear-btn" id="homeClearBtn" onclick="clearHomeSearch()">✕ Скинути</button>
             </div>
-            <!-- Search type options -->
             <div class="search-options-row">
                 <label class="search-option-label">
                     <input type="radio" name="homeSearchType" value="all" checked> Всюди
@@ -1580,16 +1571,15 @@
                     <input type="radio" name="homeSearchType" value="content"> За текстом
                 </label>
             </div>
-            <!-- Hashtag filter chips -->
             <div class="profile-hashtag-scroll" id="homeHashtagChips" style="display:none;">
                 <span class="home-hashtag-filter-label">#️⃣ Хештеги:</span>
                 <div id="homeHashtagChipsList" style="display:flex; gap:0.5rem; flex-wrap:nowrap;"></div>
             </div>
         </div>
-        <!-- Toggle arrow — завжди всередині, позиціонується абсолютно -->
-        <div class="search-bar-toggle-wrap">
-            <button class="search-bar-toggle" id="searchBarToggle" onclick="toggleSearchBar()">▼</button>
-        </div>
+    </div>
+    <!-- Toggle arrow strip — always visible -->
+    <div class="search-bar-toggle-wrap" id="searchBarToggleWrap">
+        <button class="search-bar-toggle" id="searchBarToggle" onclick="toggleSearchBar()">▼</button>
     </div>
     <!-- Search results banner -->
     <div class="search-results-banner" id="homeSearchResultsBanner"></div>
@@ -3889,6 +3879,7 @@
         // Внутрішні версії функцій навігації (без оновлення URL)
         function setHomeSearchVisible(visible) {
             document.getElementById('searchFilterBar').style.display = visible ? '' : 'none';
+            document.getElementById('searchBarToggleWrap').style.display = visible ? '' : 'none';
             document.getElementById('homeSearchResultsBanner').style.display = visible ? (window.homeSearchQuery || window.homeHashtagFilter ? 'block' : 'none') : 'none';
         }
 
