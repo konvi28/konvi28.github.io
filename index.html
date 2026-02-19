@@ -960,24 +960,26 @@
             overflow: hidden;
             opacity: 0;
             transition: max-height 0.35s ease, opacity 0.35s ease;
-        }
-
-        .search-filter-bar.active {
-            max-height: 300px;
-            opacity: 1;
-            padding: 1rem 0;
-        }
-
-        /* Arrow toggle button wrapper — sits below search bar, not clipped */
-        .search-bar-toggle-wrap {
-            text-align: center;
-            line-height: 0;
             position: relative;
-            z-index: 10;
         }
-
-        /* Arrow toggle button for home search */
+        .search-filter-bar.active {
+            max-height: 400px;
+            opacity: 1;
+            padding: 1rem 0 2rem;
+            overflow: visible;
+        }
+        .search-bar-toggle-wrap {
+            position: absolute;
+            bottom: -14px;
+            left: 0;
+            right: 0;
+            text-align: center;
+            z-index: 20;
+            line-height: 0;
+            pointer-events: none;
+        }
         .search-bar-toggle {
+            pointer-events: all;
             display: inline-flex;
             align-items: center;
             justify-content: center;
@@ -991,7 +993,6 @@
             font-size: 0.75rem;
             box-shadow: 0 2px 8px var(--shadow);
             transition: background 0.3s ease, transform 0.3s ease;
-            margin-top: -14px;
         }
         .search-bar-toggle:hover {
             background: var(--accent-dark);
@@ -1585,10 +1586,10 @@
                 <div id="homeHashtagChipsList" style="display:flex; gap:0.5rem; flex-wrap:nowrap;"></div>
             </div>
         </div>
-    </div>
-    <!-- Home search toggle arrow -->
-    <div class="search-bar-toggle-wrap">
-        <button class="search-bar-toggle" id="searchBarToggle" onclick="toggleSearchBar()">▼</button>
+        <!-- Toggle arrow — завжди всередині, позиціонується абсолютно -->
+        <div class="search-bar-toggle-wrap">
+            <button class="search-bar-toggle" id="searchBarToggle" onclick="toggleSearchBar()">▼</button>
+        </div>
     </div>
     <!-- Search results banner -->
     <div class="search-results-banner" id="homeSearchResultsBanner"></div>
@@ -3888,11 +3889,7 @@
         // Внутрішні версії функцій навігації (без оновлення URL)
         function setHomeSearchVisible(visible) {
             document.getElementById('searchFilterBar').style.display = visible ? '' : 'none';
-            const wrap = document.getElementById('searchBarToggle')?.parentElement;
-            if (wrap) wrap.style.display = visible ? '' : 'none';
             document.getElementById('homeSearchResultsBanner').style.display = visible ? (window.homeSearchQuery || window.homeHashtagFilter ? 'block' : 'none') : 'none';
-            const btn = document.getElementById('searchToggleBtn');
-            if (btn) btn.style.display = visible ? '' : 'none';
         }
 
         function hideAllPagesInternal() {
