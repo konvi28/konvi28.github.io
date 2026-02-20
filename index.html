@@ -6,7 +6,7 @@
     <link rel="icon" type="image/webp" href="logo.webp">
     <link rel="shortcut icon" type="image/webp" href="logo.webp">
     <link rel="apple-touch-icon" href="logo.webp">
-    <title>..Поетична платформа - Спільнота поетів</title>
+    <title>Поетична платформа - Спільнота поетів</title>
 
     <!-- GitHub Pages SPA: відновлюємо URL після редиректу через 404.html -->
     <script>
@@ -2079,12 +2079,21 @@
         // Перерендерити головну після того, як завантажились обидва масиви
         function refreshHomeIfReady() {
             if (window._postsReady && window._usersReady) {
-                loadFeaturedPosts();
-                loadRandomPoetry();
-                loadRandomThoughts();
-                loadUsersList();
-                loadHashtagCloud();
-                buildHomeHashtagChips(); // bar is open by default
+                const route = getCurrentRoute();
+                const page = route.split('/')[0];
+
+                // Якщо на головній — оновлюємо блоки
+                if (!page || page === 'home' || page === '') {
+                    loadFeaturedPosts();
+                    loadRandomPoetry();
+                    loadRandomThoughts();
+                    loadUsersList();
+                    loadHashtagCloud();
+                    buildHomeHashtagChips();
+                } else {
+                    // Для інших сторінок — перезапускаємо роутер з даними
+                    handleRoute();
+                }
             }
         }
 
