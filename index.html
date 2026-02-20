@@ -6,7 +6,7 @@
     <link rel="icon" type="image/webp" href="logo.webp">
     <link rel="shortcut icon" type="image/webp" href="logo.webp">
     <link rel="apple-touch-icon" href="logo.webp">
-    <title>Поетична платформа - Спільнота поетів</title>
+    <title>.Поетична платформа - Спільнота поетів</title>
 
     <!-- GitHub Pages SPA: відновлюємо URL після редиректу через 404.html -->
     <script>
@@ -3276,8 +3276,8 @@
             // Build hashtag chips from ALL user posts
             buildProfileHashtagChips(allUserPosts);
 
-            // Sort by date
-            posts.sort((a, b) => b.date - a.date);
+            // Sort by date — newest first (handle both timestamp and string)
+            posts.sort((a, b) => new Date(b.date) - new Date(a.date));
 
             const container = document.getElementById('profilePosts');
             const isOwnProfile = window.currentUser && window.currentUser.uid === userId;
