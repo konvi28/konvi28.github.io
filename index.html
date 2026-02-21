@@ -4858,59 +4858,76 @@ function downloadImage(blob, filename) {
             document.getElementById('chatModal').style.display = 'flex';
             document.getElementById('chatInput').focus();
 
-            // onValue — realtime listener, спрацьовує одразу і при кожній зміні в БД
-            console.log('[Chat] subscribing onValue for chatId:', currentChatId);
-            chatUnsubscribe = onValue(ref(database, `messages/${currentChatId}`), (snap) => {
-                console.log('[Chat] onValue fired! exists:', snap.exists(), 'size:', snap.size);
-                const container = document.getElementById('chatMessages');
-                if (!container) { console.warn('[Chat] no container!'); return; }
+            // Polling з примусовим читанням з сервера (без кешу)
+            console.log('[Chat] subscribing for chatId:', currentChatId);
+            const thisChatId = currentChatId;
 
-                if (!snap.exists()) {
-                    container.innerHTML = '<p style="text-align:center;color:var(--text-lighter);font-size:0.85rem;padding:2rem;">Напишіть першим!</p>';
-                    return;
-                }
+            const loadMessages = async () => {
+                if (currentChatId !== thisChatId) return;
+                try {
+                    const snap = await get(ref(database, `messages/${thisChatId}`));
+                    console.log('[Chat] poll get done, exists:', snap.exists(), 'active:', pollActive);
+                    if (currentChatId !== thisChatId) return;
+                    const container = document.getElementById('chatMessages');
+                    if (!container) return;
 
-                const msgs = [];
-                snap.forEach(child => msgs.push({ id: child.key, ...child.val() }));
-                msgs.sort((a, b) => a.date - b.date);
-
-                const wasAtBottom = container.scrollHeight - container.scrollTop - container.clientHeight < 60;
-
-                let lastDateStr = '';
-                const html = msgs.map(m => {
-                    const isMine = m.from === me;
-                    const d = new Date(m.date);
-                    const dateStr = d.toLocaleDateString('uk-UA', { day: 'numeric', month: 'long' });
-                    const time = d.toLocaleTimeString('uk-UA', { hour: '2-digit', minute: '2-digit' });
-
-                    let sep = '';
-                    if (dateStr !== lastDateStr) {
-                        sep = `<div class="msg-date-sep"><span>${dateStr}</span></div>`;
-                        lastDateStr = dateStr;
+                    if (!snap.exists()) {
+                        container.innerHTML = '<p style="text-align:center;color:var(--text-lighter);font-size:0.85rem;padding:2rem;">Напишіть першим!</p>';
+                        return;
                     }
 
-                    const ticks = isMine
-                        ? m.read
-                            ? `<span class="tick read">✓✓</span>`
-                            : `<span class="tick sent">✓</span>`
-                        : '';
+                    const msgs = [];
+                    snap.forEach(child => msgs.push({ id: child.key, ...child.val() }));
+                    msgs.sort((a, b) => a.date - b.date);
 
-                    return `${sep}<div class="msg-row ${isMine ? 'mine' : 'theirs'}">
-                        <div class="msg-bubble ${isMine ? 'mine' : 'theirs'}">${escapeHtmlMsg(m.text)}</div>
-                        <div class="msg-meta">${time}${ticks}</div>
-                    </div>`;
-                }).join('');
+                    const wasAtBottom = container.scrollHeight - container.scrollTop - container.clientHeight < 60;
 
-                container.innerHTML = `<div class="chat-wrap">${html}</div>`;
-                if (wasAtBottom) container.scrollTop = container.scrollHeight;
+                    let lastDateStr = '';
+                    const html = msgs.map(m => {
+                        const isMine = m.from === me;
+                        const d = new Date(m.date);
+                        const dateStr = d.toLocaleDateString('uk-UA', { day: 'numeric', month: 'long' });
+                        const time = d.toLocaleTimeString('uk-UA', { hour: '2-digit', minute: '2-digit' });
 
-                // Позначаємо прочитані
-                const chatIdForRead = currentChatId;
-                const unread = msgs.filter(m => m.from !== me && !m.read);
-                unread.forEach(m => {
-                    set(ref(database, `messages/${chatIdForRead}/${m.id}/read`), true);
-                });
-            });
+                        let sep = '';
+                        if (dateStr !== lastDateStr) {
+                            sep = `<div class="msg-date-sep"><span>${dateStr}</span></div>`;
+                            lastDateStr = dateStr;
+                        }
+
+                        const ticks = isMine
+                            ? m.read
+                                ? `<span class="tick read">✓✓</span>`
+                                : `<span class="tick sent">✓</span>`
+                            : '';
+
+                        return `${sep}<div class="msg-row ${isMine ? 'mine' : 'theirs'}">
+                            <div class="msg-bubble ${isMine ? 'mine' : 'theirs'}">${escapeHtmlMsg(m.text)}</div>
+                            <div class="msg-meta">${time}${ticks}</div>
+                        </div>`;
+                    }).join('');
+
+                    container.innerHTML = `<div class="chat-wrap">${html}</div>`;
+                    if (wasAtBottom) container.scrollTop = container.scrollHeight;
+
+                    const unread = msgs.filter(m => m.from !== me && !m.read);
+                    unread.forEach(m => {
+                        set(ref(database, `messages/${thisChatId}/${m.id}/read`), true);
+                    });
+                } catch(e) {
+                    console.error('[Chat] loadMessages error:', e);
+                }
+            };
+
+            let pollActive = true;
+            chatUnsubscribe = () => { pollActive = false; };
+
+            const poll = async () => {
+                if (!pollActive) return;
+                await loadMessages();
+                if (pollActive) setTimeout(poll, 2000);
+            };
+            poll();
         };
 
         window.closeChatModal = function() {
