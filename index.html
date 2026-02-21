@@ -6,7 +6,7 @@
     <link rel="icon" type="image/webp" href="logo.webp">
     <link rel="shortcut icon" type="image/webp" href="logo.webp">
     <link rel="apple-touch-icon" href="logo.webp">
-    <title>2222Спільнота поетів</title>
+    <title>333 Спільнота поетів</title>
 
     <!-- GitHub Pages SPA: відновлюємо URL після редиректу через 404.html -->
     <script>
@@ -4865,21 +4865,21 @@ function downloadImage(blob, filename) {
             const loadMessages = async () => {
                 if (currentChatId !== thisChatId) return;
                 try {
-                    goOffline(database);
-                    goOnline(database);
-                    const snap = await get(ref(database, `messages/${thisChatId}`));
-                    console.log('[Chat] poll get done, exists:', snap.exists(), 'active:', pollActive, 'numChildren:', snap.numChildren());
+                    // REST API — завжди свіжі дані з сервера, без кешу Firebase SDK
+                    const resp = await fetch(`https://poetry-blog-ff72f-default-rtdb.europe-west1.firebasedatabase.app/messages/${thisChatId}.json`);
+                    const data = await resp.json();
+                    console.log('[Chat] poll done, msgs:', data ? Object.keys(data).length : 0);
+
                     if (currentChatId !== thisChatId) return;
                     const container = document.getElementById('chatMessages');
                     if (!container) return;
 
-                    if (!snap.exists()) {
+                    if (!data) {
                         container.innerHTML = '<p style="text-align:center;color:var(--text-lighter);font-size:0.85rem;padding:2rem;">Напишіть першим!</p>';
                         return;
                     }
 
-                    const msgs = [];
-                    snap.forEach(child => msgs.push({ id: child.key, ...child.val() }));
+                    const msgs = Object.entries(data).map(([id, val]) => ({ id, ...val }));
                     msgs.sort((a, b) => a.date - b.date);
 
                     const wasAtBottom = container.scrollHeight - container.scrollTop - container.clientHeight < 60;
