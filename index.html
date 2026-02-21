@@ -1935,6 +1935,35 @@
         </div>
     </div>
 
+    <!-- Edit Post Modal -->
+    <div id="editPostModal" class="modal">
+        <div class="modal-content" style="max-width: 600px;">
+            <h2 class="card-title">✏️ Редагувати публікацію</h2>
+            <div class="form-group">
+                <label class="form-label">Тип</label>
+                <select class="form-input" id="editPostType">
+                    <option value="poetry">Поезія</option>
+                    <option value="thought">Думка</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Назва</label>
+                <input type="text" class="form-input" id="editPostTitle">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Текст</label>
+                <textarea class="form-input" id="editPostContent" rows="10"></textarea>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Хештеги (через пробіл, наприклад: #кохання #природа)</label>
+                <input type="text" class="form-input" id="editPostHashtags">
+            </div>
+            <input type="hidden" id="editPostId">
+            <button class="btn btn-primary" style="width: 100%; margin-bottom: 1rem;" onclick="handleSavePost()">💾 Зберегти</button>
+            <button class="btn btn-secondary" style="width: 100%;" onclick="closeEditPostModal()">Скасувати</button>
+        </div>
+    </div>
+
     <!-- Admin Panel Page -->
     <div id="adminPage" style="display: none;">
         <div class="card" style="max-width: 1200px; margin: 0 auto;">
@@ -2725,6 +2754,43 @@
             }
         };
 
+
+        window.editPost = async function(postId) {
+            const snap = await get(ref(database, `posts/${postId}`));
+            if (!snap.exists()) { alert('Публікацію не знайдено'); return; }
+            const post = snap.val();
+            document.getElementById('editPostId').value = postId;
+            document.getElementById('editPostType').value = post.type || 'poetry';
+            document.getElementById('editPostTitle').value = post.title || '';
+            document.getElementById('editPostContent').value = post.content || '';
+            document.getElementById('editPostHashtags').value = post.hashtags || '';
+            document.getElementById('editPostModal').classList.add('active');
+        };
+
+        window.closeEditPostModal = function() {
+            document.getElementById('editPostModal').classList.remove('active');
+        };
+
+        window.handleSavePost = async function() {
+            const postId = document.getElementById('editPostId').value;
+            const type = document.getElementById('editPostType').value;
+            const title = document.getElementById('editPostTitle').value.trim();
+            const content = document.getElementById('editPostContent').value.trim();
+            const hashtags = document.getElementById('editPostHashtags').value.trim();
+            if (!title || !content) { alert('Заповніть назву та текст'); return; }
+            try {
+                const snap = await get(ref(database, `posts/${postId}`));
+                const existing = snap.val();
+                await set(ref(database, `posts/${postId}`), { ...existing, type, title, content, hashtags });
+                closeEditPostModal();
+                alert('✅ Публікацію збережено');
+                loadMyProfile();
+            } catch(e) {
+                console.error('Edit post error:', e);
+                alert('❌ Помилка збереження');
+            }
+        };
+
         // ===== HEADER FILTER BAR SYSTEM =====
         // mode: 'allPosts' | 'profile' | null
         window.headerFilterMode = null;
@@ -3465,6 +3531,7 @@
                             </button>
                             <button class="btn btn-secondary btn-small" onclick="scrollToTOC()">📑 До змісту</button>
                             <button class="btn btn-primary btn-small" onclick="downloadPostAsImage('${post.id}')">📥 Зберегти як фото</button>
+                            ${isOwnProfile ? `<button class="btn btn-secondary btn-small" onclick="editPost('${post.id}')">✏️ Редагувати</button>` : ''}
                             ${isOwnProfile ? `<button class="btn btn-secondary btn-small" onclick="deletePost('${post.id}')">🗑️ Видалити</button>` : ''}
                         </div>
                     </div>`;
