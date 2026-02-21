@@ -6,7 +6,7 @@
     <link rel="icon" type="image/webp" href="logo.webp">
     <link rel="shortcut icon" type="image/webp" href="logo.webp">
     <link rel="apple-touch-icon" href="logo.webp">
-    <title>Поетична платформа - Спільнота поетів</title>
+    <title>1 Спільнота поетів</title>
 
     <!-- GitHub Pages SPA: відновлюємо URL після редиректу через 404.html -->
     <script>
@@ -23,21 +23,21 @@
     <!-- SEO -->
     <meta name="description" content="Поетична платформа KonVi — спільнота українських поетів. Читайте вірші та думки авторів.">
     <meta name="robots" content="index, follow">
-    <link rel="canonical" id="canonicalTag" href="https://konvi.space/">
+    <link rel="canonical" id="canonicalTag" href="https://poetssociety.pages.dev/">
 
     <!-- Open Graph -->
     <meta property="og:type" content="website">
     <meta property="og:site_name" content="Поетична платформа KonVi">
     <meta property="og:title" id="ogTitle" content="Поетична платформа KonVi">
     <meta property="og:description" id="ogDescription" content="Спільнота українських поетів. Читайте вірші та думки авторів.">
-    <meta property="og:url" id="ogUrl" content="https://konvi.space/">
-    <meta property="og:image" id="ogImage" content="https://konvi.space/logo.webp">
+    <meta property="og:url" id="ogUrl" content="https://poetssociety.pages.dev/">
+    <meta property="og:image" id="ogImage" content="https://poetssociety.pages.dev/logo.webp">
 
     <!-- Twitter Card -->
     <meta name="twitter:card" content="summary">
     <meta name="twitter:title" id="twitterTitle" content="Поетична платформа KonVi">
     <meta name="twitter:description" id="twitterDescription" content="Спільнота українських поетів.">
-    <meta name="twitter:image" id="twitterImage" content="https://konvi.space/logo.webp">
+    <meta name="twitter:image" id="twitterImage" content="https://poetssociety.pages.dev/logo.webp">
     <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=Philosopher:wght@400;700&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -1486,6 +1486,53 @@
             .home-section-card .card-title { font-size: 1rem; }
         }
 
+        /* ===== MESSAGES & CHAT ===== */
+        .dialog-item {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.75rem;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: background 0.2s;
+            border-bottom: 1px solid var(--border);
+        }
+        .dialog-item:hover { background: var(--bg-secondary); }
+        .dialog-item:last-child { border-bottom: none; }
+        .dialog-avatar {
+            width: 44px; height: 44px; border-radius: 50%;
+            background: var(--bg-secondary); display: flex;
+            align-items: center; justify-content: center;
+            font-size: 1.2rem; flex-shrink: 0;
+            border: 2px solid var(--accent); overflow: hidden;
+        }
+        .dialog-name { font-weight: 600; color: var(--text-main); font-size: 0.95rem; }
+        .dialog-preview { color: var(--text-lighter); font-size: 0.82rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 240px; }
+        .dialog-unread {
+            margin-left: auto; background: var(--accent); color: white;
+            border-radius: 50%; width: 20px; height: 20px;
+            font-size: 0.7rem; display: flex; align-items: center;
+            justify-content: center; font-weight: 700; flex-shrink: 0;
+        }
+        .msg-bubble {
+            max-width: 75%; padding: 0.5rem 0.85rem;
+            border-radius: 14px; font-size: 0.92rem; line-height: 1.5;
+            word-break: break-word;
+        }
+        .msg-bubble.mine {
+            background: var(--accent); color: white;
+            align-self: flex-end; border-bottom-right-radius: 4px;
+        }
+        .msg-bubble.theirs {
+            background: var(--bg-secondary); color: var(--text-main);
+            align-self: flex-start; border-bottom-left-radius: 4px;
+        }
+        .msg-time { font-size: 0.7rem; opacity: 0.6; margin-top: 2px; display: block; }
+        #msgBadge { display: none; }
+        #msgBadge.visible {
+            display: inline-flex !important;
+        }
+
     </style>
 </head>
 <body>
@@ -1680,8 +1727,10 @@
             <!-- Profile Header -->
             <div class="card" style="margin-bottom: 2rem;">
                 <!-- Buttons row (top right) -->
-                <div id="profileBtnsRow" style="display: none; justify-content: flex-end; gap: 0.5rem; margin-bottom: 0.75rem;">
+                <div id="profileBtnsRow" style="display: none; justify-content: flex-end; gap: 0.5rem; margin-bottom: 0.75rem; flex-wrap: wrap;">
                     <button class="btn btn-secondary" onclick="shareProfile()" id="shareProfileBtn" style="display: none;">🔗 Поділитися</button>
+                    <button class="btn btn-secondary" id="friendBtn" style="display: none;" onclick="handleFriendAction()">👥 Додати в друзі</button>
+                    <button class="btn btn-primary" id="messageBtn" style="display: none;" onclick="openChat(window.currentProfileUserId)">💬 Написати</button>
                     <button class="btn btn-primary" onclick="showNewPostModal()" id="newPostBtn" style="display: none;">➕ Нова публікація</button>
                 </div>
 
@@ -1890,6 +1939,37 @@
 
     </div><!-- /pagesWrapper -->
 
+    <!-- Messages Page -->
+    <div id="messagesPage" style="display:none; max-width:700px; margin:0 auto; padding:1.5rem 1rem;">
+        <div class="card">
+            <h2 class="card-title">💬 Повідомлення</h2>
+            <div id="dialogsList" style="margin-top:1rem;">
+                <p style="color:var(--text-lighter); text-align:center;">Завантаження...</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Chat Modal -->
+    <div id="chatModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:1000; align-items:center; justify-content:center;">
+        <div style="background:var(--bg-card); border-radius:12px; width:100%; max-width:480px; max-height:80vh; display:flex; flex-direction:column; margin:1rem; box-shadow:0 8px 32px var(--shadow);">
+            <!-- Chat header -->
+            <div style="display:flex; align-items:center; justify-content:space-between; padding:1rem 1.25rem; border-bottom:1px solid var(--border);">
+                <div style="display:flex; align-items:center; gap:0.75rem;">
+                    <div id="chatAvatar" style="width:40px;height:40px;border-radius:50%;background:var(--bg-secondary);display:flex;align-items:center;justify-content:center;font-size:1.2rem;overflow:hidden;border:2px solid var(--accent);flex-shrink:0;">👤</div>
+                    <strong id="chatPartnerName" style="font-size:1rem; color:var(--text-main);">...</strong>
+                </div>
+                <button onclick="closeChatModal()" style="background:none;border:none;font-size:1.3rem;cursor:pointer;color:var(--text-lighter);">✕</button>
+            </div>
+            <!-- Messages area -->
+            <div id="chatMessages" style="flex:1; overflow-y:auto; padding:1rem; display:flex; flex-direction:column; gap:0.5rem; min-height:200px; max-height:50vh;"></div>
+            <!-- Input -->
+            <div style="padding:0.75rem 1rem; border-top:1px solid var(--border); display:flex; gap:0.5rem;">
+                <input id="chatInput" type="text" placeholder="Повідомлення..." style="flex:1; padding:0.5rem 0.75rem; border:1px solid var(--border); border-radius:8px; font-size:0.95rem; background:var(--bg-main); color:var(--text-main);" onkeypress="if(event.key==='Enter') sendMessage()">
+                <button onclick="sendMessage()" class="btn btn-primary" style="padding:0.5rem 1rem;">Надіслати</button>
+            </div>
+        </div>
+    </div>
+
     <script type="module">
         // Firebase imports
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
@@ -2056,10 +2136,14 @@
                 
                 userMenu.innerHTML = `
                     <span style="color: var(--accent); font-weight: 600;">👤 ${userData?.name || 'Користувач'}</span>
+                    <button class="btn btn-secondary" onclick="showMessages()" id="messagesBtn" style="position:relative; padding: 0.4rem 0.75rem;">
+                        💬 <span id="msgBadge" style="display:none; position:absolute; top:-6px; right:-6px; background:#e74c3c; color:white; border-radius:50%; width:18px; height:18px; font-size:0.7rem; align-items:center; justify-content:center; font-weight:700; line-height:1;"></span>
+                    </button>
                     ${window.isAdmin ? '<button class="btn btn-secondary" onclick="showAdminPanel()">⚙️ Адмін</button>' : ''}
                     <button class="btn btn-secondary" onclick="showMyProfile()">Мій профіль</button>
                     <button class="btn btn-primary" onclick="handleLogout()">Вийти</button>
                 `;
+                setTimeout(() => startMsgListener(), 0);
                 setTimeout(syncMobileUserMenu, 0);
             } else {
                 // User is signed out
@@ -2464,6 +2548,9 @@
                 url: '/profile/' + userId,
                 image: userData.avatarUrl || undefined
             });
+
+            // Кнопки друзів/повідомлень
+            await updateFriendBtn(userId);
 
             document.getElementById('newPostBtn').style.display = 'none';
             document.getElementById('shareProfileBtn').style.display = 'block';
@@ -3891,7 +3978,7 @@
 
         // Оновлення мета-тегів для SEO
         function updateMeta({ title, description, url, image } = {}) {
-            const base = 'https://konvi.space';
+            const base = 'https://poetssociety.pages.dev';
             const fullTitle = title ? title + ' — KonVi' : 'Поетична платформа - Спільнота поетів';
             const fullUrl = url ? base + url : base + window.location.pathname;
             const fullDesc = description || 'Спільнота українських поетів. Читайте вірші та думки авторів.';
@@ -4601,7 +4688,225 @@ function downloadImage(blob, filename) {
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
 }
-			
+
+        // ===== FRIENDS & MESSAGES =====
+
+        function getChatId(uid1, uid2) {
+            return [uid1, uid2].sort().join('_');
+        }
+
+        async function getFriendStatus(targetUserId) {
+            const me = window.currentUser?.uid;
+            if (!me || me === targetUserId) return 'self';
+            const [friendSnap, sentSnap, receivedSnap] = await Promise.all([
+                get(ref(database, `friends/${me}/${targetUserId}`)),
+                get(ref(database, `friendRequests/${targetUserId}/${me}`)),
+                get(ref(database, `friendRequests/${me}/${targetUserId}`)),
+            ]);
+            if (friendSnap.exists()) return 'friends';
+            if (sentSnap.exists()) return 'pending_sent';
+            if (receivedSnap.exists()) return 'pending_received';
+            return 'none';
+        }
+
+        async function updateFriendBtn(targetUserId) {
+            const btn = document.getElementById('friendBtn');
+            const msgBtn = document.getElementById('messageBtn');
+            if (!btn) return;
+            if (!window.currentUser || window.currentUser.uid === targetUserId) {
+                btn.style.display = 'none';
+                if (msgBtn) msgBtn.style.display = 'none';
+                return;
+            }
+            btn.style.display = '';
+            const status = await getFriendStatus(targetUserId);
+            if (status === 'friends') {
+                btn.textContent = '✅ Друзі';
+                btn.className = 'btn btn-secondary';
+                if (msgBtn) msgBtn.style.display = '';
+            } else if (status === 'pending_sent') {
+                btn.textContent = '⏳ Запит надіслано';
+                btn.className = 'btn btn-secondary';
+                if (msgBtn) msgBtn.style.display = 'none';
+            } else if (status === 'pending_received') {
+                btn.textContent = '✅ Прийняти запит';
+                btn.className = 'btn btn-primary';
+                if (msgBtn) msgBtn.style.display = 'none';
+            } else {
+                btn.textContent = '👥 Додати в друзі';
+                btn.className = 'btn btn-secondary';
+                if (msgBtn) msgBtn.style.display = 'none';
+            }
+        }
+
+        window.handleFriendAction = async function() {
+            const me = window.currentUser?.uid;
+            const target = window.currentProfileUserId;
+            if (!me || !target) return;
+            const status = await getFriendStatus(target);
+            if (status === 'none') {
+                await set(ref(database, `friendRequests/${target}/${me}`), { from: me, date: Date.now() });
+                alert('✅ Запит на дружбу надіслано!');
+            } else if (status === 'pending_received') {
+                await Promise.all([
+                    set(ref(database, `friends/${me}/${target}`), { since: Date.now() }),
+                    set(ref(database, `friends/${target}/${me}`), { since: Date.now() }),
+                    remove(ref(database, `friendRequests/${me}/${target}`)),
+                ]);
+                alert('🎉 Тепер ви друзі!');
+            } else if (status === 'pending_sent') {
+                if (confirm('Скасувати запит на дружбу?')) {
+                    await remove(ref(database, `friendRequests/${target}/${me}`));
+                }
+            } else if (status === 'friends') {
+                if (confirm('Видалити з друзів?')) {
+                    await Promise.all([
+                        remove(ref(database, `friends/${me}/${target}`)),
+                        remove(ref(database, `friends/${target}/${me}`)),
+                    ]);
+                }
+            }
+            await updateFriendBtn(target);
+        };
+
+        // ---- CHAT ----
+        let chatUnsubscribe = null;
+        let currentChatId = null;
+
+        window.openChat = async function(targetUserId) {
+            const me = window.currentUser?.uid;
+            if (!me) return;
+            const status = await getFriendStatus(targetUserId);
+            if (status !== 'friends') { alert('Писати можна тільки друзям'); return; }
+
+            currentChatId = getChatId(me, targetUserId);
+            const partner = window.allUsers.find(u => u.id === targetUserId);
+            const partnerName = partner?.name || 'Користувач';
+            document.getElementById('chatPartnerName').textContent = partnerName;
+            const avatarEl = document.getElementById('chatAvatar');
+            if (partner?.avatarUrl) {
+                avatarEl.innerHTML = `<img src="${partner.avatarUrl}" style="width:100%;height:100%;object-fit:cover;">`;
+            } else {
+                avatarEl.textContent = partnerName.charAt(0).toUpperCase();
+            }
+            document.getElementById('chatModal').style.display = 'flex';
+            document.getElementById('chatInput').focus();
+
+            if (chatUnsubscribe) chatUnsubscribe();
+            chatUnsubscribe = onValue(ref(database, `messages/${currentChatId}`), snap => {
+                const container = document.getElementById('chatMessages');
+                if (!snap.exists()) {
+                    container.innerHTML = '<p style="text-align:center;color:var(--text-lighter);font-size:0.85rem;">Напишіть першим!</p>';
+                    return;
+                }
+                const msgs = [];
+                snap.forEach(child => msgs.push({ id: child.key, ...child.val() }));
+                msgs.sort((a, b) => a.date - b.date);
+                container.innerHTML = msgs.map(m => {
+                    const isMine = m.from === me;
+                    const time = new Date(m.date).toLocaleTimeString('uk-UA', { hour: '2-digit', minute: '2-digit' });
+                    return `<div style="display:flex;flex-direction:column;align-items:${isMine?'flex-end':'flex-start'};">
+                        <div class="msg-bubble ${isMine?'mine':'theirs'}">${escapeHtmlMsg(m.text)}</div>
+                        <span class="msg-time" style="align-self:${isMine?'flex-end':'flex-start'}">${time}</span>
+                    </div>`;
+                }).join('');
+                msgs.filter(m => m.from !== me && !m.read).forEach(m => {
+                    set(ref(database, `messages/${currentChatId}/${m.id}/read`), true);
+                });
+                container.scrollTop = container.scrollHeight;
+            });
+        };
+
+        window.closeChatModal = function() {
+            document.getElementById('chatModal').style.display = 'none';
+            if (chatUnsubscribe) { chatUnsubscribe(); chatUnsubscribe = null; }
+            currentChatId = null;
+        };
+
+        window.sendMessage = async function() {
+            const me = window.currentUser?.uid;
+            const input = document.getElementById('chatInput');
+            const text = input.value.trim();
+            if (!text || !currentChatId || !me) return;
+            input.value = '';
+            await push(ref(database, `messages/${currentChatId}`), { from: me, text, date: Date.now(), read: false });
+        };
+
+        function escapeHtmlMsg(str = '') {
+            return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+        }
+
+        // ---- MESSAGES PAGE ----
+        window.showMessages = function() {
+            hideAllPages();
+            document.getElementById('messagesPage').style.display = 'block';
+            loadDialogs();
+        };
+
+        async function loadDialogs() {
+            const me = window.currentUser?.uid;
+            const container = document.getElementById('dialogsList');
+            if (!me) return;
+            const friendsSnap = await get(ref(database, `friends/${me}`));
+            if (!friendsSnap.exists()) {
+                container.innerHTML = '<p style="text-align:center;color:var(--text-lighter);">У вас поки немає друзів</p>';
+                return;
+            }
+            const friendIds = Object.keys(friendsSnap.val());
+            container.innerHTML = '<p style="color:var(--text-lighter);text-align:center;">Завантаження...</p>';
+            const dialogs = await Promise.all(friendIds.map(async fid => {
+                const chatId = getChatId(me, fid);
+                const msgsSnap = await get(ref(database, `messages/${chatId}`));
+                const friend = window.allUsers.find(u => u.id === fid);
+                let lastMsg = null; let unread = 0;
+                if (msgsSnap.exists()) {
+                    const msgs = [];
+                    msgsSnap.forEach(c => msgs.push({ id: c.key, ...c.val() }));
+                    msgs.sort((a, b) => b.date - a.date);
+                    lastMsg = msgs[0];
+                    unread = msgs.filter(m => m.from !== me && !m.read).length;
+                }
+                return { fid, friend, lastMsg, unread };
+            }));
+            dialogs.sort((a, b) => (b.lastMsg?.date || 0) - (a.lastMsg?.date || 0));
+            container.innerHTML = dialogs.map(({ fid, friend, lastMsg, unread }) => {
+                const name = friend?.name || 'Користувач';
+                const avatarHtml = friend?.avatarUrl
+                    ? `<img src="${friend.avatarUrl}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`
+                    : name.charAt(0).toUpperCase();
+                const preview = lastMsg ? escapeHtmlMsg(lastMsg.text.substring(0, 40)) : 'Немає повідомлень';
+                const unreadHtml = unread > 0 ? `<div class="dialog-unread">${unread}</div>` : '';
+                return `<div class="dialog-item" onclick="openChat('${fid}')">
+                    <div class="dialog-avatar">${avatarHtml}</div>
+                    <div style="flex:1;min-width:0;">
+                        <div class="dialog-name">${escapeHtmlMsg(name)}</div>
+                        <div class="dialog-preview">${preview}</div>
+                    </div>
+                    ${unreadHtml}
+                </div>`;
+            }).join('');
+        }
+
+        // ---- BADGE ----
+        function startMsgListener() {
+            const me = window.currentUser?.uid;
+            if (!me) return;
+            onValue(ref(database, `friends/${me}`), async snap => {
+                if (!snap.exists()) return;
+                const friendIds = Object.keys(snap.val());
+                let total = 0;
+                await Promise.all(friendIds.map(async fid => {
+                    const msgsSnap = await get(ref(database, `messages/${getChatId(me, fid)}`));
+                    if (msgsSnap.exists()) msgsSnap.forEach(c => { const m = c.val(); if (m.from !== me && !m.read) total++; });
+                }));
+                const badge = document.getElementById('msgBadge');
+                if (badge) {
+                    badge.textContent = total > 0 ? total : '';
+                    badge.style.display = total > 0 ? 'inline-flex' : 'none';
+                }
+            });
+        }
+
 </script>
 
     <!-- Footer -->
