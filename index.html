@@ -6,7 +6,7 @@
     <link rel="icon" type="image/webp" href="logo.webp">
     <link rel="shortcut icon" type="image/webp" href="logo.webp">
     <link rel="apple-touch-icon" href="logo.webp">
-    <title>Спільнота поетів</title>
+    <title>Поетична платформа - Спільнота поетів</title>
 
     <!-- GitHub Pages SPA: відновлюємо URL після редиректу через 404.html -->
     <script>
@@ -4835,11 +4835,13 @@ function downloadImage(blob, filename) {
 
         window.openChat = async function(targetUserId) {
             const me = window.currentUser?.uid;
-            if (!me) return;
+            if (!me) { console.warn('[Chat] no user'); return; }
             const status = await getFriendStatus(targetUserId);
+            console.log('[Chat] status:', status, '| me:', me, '| target:', targetUserId);
             if (status !== 'friends') { alert('Писати можна тільки друзям'); return; }
 
             currentChatId = getChatId(me, targetUserId);
+            console.log('[Chat] chatId:', currentChatId);
             const partner = window.allUsers.find(u => u.id === targetUserId);
             const partnerName = partner?.name || 'Користувач';
             document.getElementById('chatPartnerName').textContent = partnerName;
@@ -4916,11 +4918,15 @@ function downloadImage(blob, filename) {
             const me = window.currentUser?.uid;
             const input = document.getElementById('chatInput');
             const text = input.value.trim();
+            console.log('[Chat] sendMessage | text:', text, '| chatId:', currentChatId, '| me:', me, '| isSending:', isSending);
             if (!text || !currentChatId || !me || isSending) return;
             isSending = true;
             input.value = '';
             try {
                 await push(ref(database, `messages/${currentChatId}`), { from: me, text, date: Date.now(), read: false });
+                console.log('[Chat] message sent OK');
+            } catch(e) {
+                console.error('[Chat] send error:', e);
             } finally {
                 isSending = false;
             }
