@@ -6,7 +6,7 @@
     <link rel="icon" type="image/webp" href="logo.webp">
     <link rel="shortcut icon" type="image/webp" href="logo.webp">
     <link rel="apple-touch-icon" href="logo.webp">
-    <title>1 Спільнота поетів</title>
+    <title>111Спільнота поетів</title>
 
     <!-- GitHub Pages SPA: відновлюємо URL після редиректу через 404.html -->
     <script>
@@ -4830,9 +4830,8 @@ function downloadImage(blob, filename) {
         };
 
         // ---- CHAT ----
-        let chatUnsubscribe = null;
+        let chatUnsubscribe = null; // функція відписки onValue
         let currentChatId = null;
-        let currentLoadMessages = null;
 
         window.openChat = async function(targetUserId) {
             const me = window.currentUser?.uid;
@@ -4841,12 +4840,12 @@ function downloadImage(blob, filename) {
             console.log('[Chat] status:', status, '| me:', me, '| target:', targetUserId);
             if (status !== 'friends') { alert('Писати можна тільки друзям'); return; }
 
-            // Зупиняємо попередній polling перед зміною chatId
-            if (chatUnsubscribe) { chatUnsubscribe.stop(); chatUnsubscribe = null; }
+            // Відписуємось від попереднього чату
+            if (chatUnsubscribe) { chatUnsubscribe(); chatUnsubscribe = null; }
 
-            const thisChatId = getChatId(me, targetUserId);
-            currentChatId = thisChatId;
+            currentChatId = getChatId(me, targetUserId);
             console.log('[Chat] chatId:', currentChatId);
+
             const partner = window.allUsers.find(u => u.id === targetUserId);
             const partnerName = partner?.name || 'Користувач';
             document.getElementById('chatPartnerName').textContent = partnerName;
@@ -4859,16 +4858,8 @@ function downloadImage(blob, filename) {
             document.getElementById('chatModal').style.display = 'flex';
             document.getElementById('chatInput').focus();
 
-            // Функція завантаження повідомлень — прив'язана до конкретного thisChatId
-            const loadMessages = async () => {
-                // Якщо чат вже змінився — не оновлюємо DOM
-                if (currentChatId !== thisChatId) return;
-
-                const snap = await get(ref(database, `messages/${thisChatId}`));
-
-                // Перевіряємо ще раз після await — чат міг змінитись поки чекали відповідь
-                if (currentChatId !== thisChatId) return;
-
+            // onValue — realtime listener, спрацьовує одразу і при кожній зміні в БД
+            chatUnsubscribe = onValue(ref(database, `messages/${currentChatId}`), (snap) => {
                 const container = document.getElementById('chatMessages');
                 if (!container) return;
 
@@ -4876,6 +4867,7 @@ function downloadImage(blob, filename) {
                     container.innerHTML = '<p style="text-align:center;color:var(--text-lighter);font-size:0.85rem;padding:2rem;">Напишіть першим!</p>';
                     return;
                 }
+
                 const msgs = [];
                 snap.forEach(child => msgs.push({ id: child.key, ...child.val() }));
                 msgs.sort((a, b) => a.date - b.date);
@@ -4911,33 +4903,18 @@ function downloadImage(blob, filename) {
                 if (wasAtBottom) container.scrollTop = container.scrollHeight;
 
                 // Позначаємо прочитані
+                const chatIdForRead = currentChatId;
                 const unread = msgs.filter(m => m.from !== me && !m.read);
-                if (unread.length > 0) {
-                    unread.forEach(m => {
-                        set(ref(database, `messages/${thisChatId}/${m.id}/read`), true);
-                    });
-                }
-            };
-
-            currentLoadMessages = loadMessages;
-            await loadMessages();
-
-            // Polling без race condition: чекаємо завершення попереднього запиту
-            let pollActive = true;
-            chatUnsubscribe = { stop: () => { pollActive = false; } };
-            const poll = async () => {
-                if (!pollActive) return;
-                await loadMessages();
-                if (pollActive) setTimeout(poll, 1500);
-            };
-            setTimeout(poll, 1500);
+                unread.forEach(m => {
+                    set(ref(database, `messages/${chatIdForRead}/${m.id}/read`), true);
+                });
+            });
         };
 
         window.closeChatModal = function() {
             document.getElementById('chatModal').style.display = 'none';
-            if (chatUnsubscribe) { chatUnsubscribe.stop(); chatUnsubscribe = null; }
+            if (chatUnsubscribe) { chatUnsubscribe(); chatUnsubscribe = null; }
             currentChatId = null;
-            currentLoadMessages = null;
         };
 
         let isSending = false;
@@ -4952,11 +4929,10 @@ function downloadImage(blob, filename) {
             try {
                 await push(ref(database, `messages/${currentChatId}`), { from: me, text, date: Date.now(), read: false });
                 console.log('[Chat] message sent OK');
-                // Одразу оновлюємо повідомлення після відправки
-                if (currentLoadMessages) await currentLoadMessages();
+                // onValue автоматично оновить UI — нічого додаткового не потрібно
             } catch(e) {
                 console.error('[Chat] send error:', e);
-                input.value = text; // повертаємо текст якщо помилка
+                input.value = text;
             } finally {
                 isSending = false;
             }
