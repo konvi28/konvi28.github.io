@@ -6,7 +6,7 @@
     <link rel="icon" type="image/webp" href="logo.webp">
     <link rel="shortcut icon" type="image/webp" href="logo.webp">
     <link rel="apple-touch-icon" href="logo.webp">
-    <title>.Спільнота поетів</title>
+    <title>Спільнота поетів</title>
 
     <!-- GitHub Pages SPA: відновлюємо URL після редиректу через 404.html -->
     <script>
@@ -987,6 +987,10 @@
             white-space: pre-wrap;
             line-height: 1.6;
             flex: 1;
+            display: -webkit-box;
+            -webkit-line-clamp: 6;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
         }
 
         @media (max-width: 1200px) {
