@@ -6,7 +6,7 @@
     <link rel="icon" type="image/webp" href="logo.webp">
     <link rel="shortcut icon" type="image/webp" href="logo.webp">
     <link rel="apple-touch-icon" href="logo.webp">
-    <title>Поетична платформа - Спільнота поетів</title>
+    <title>Спільнота поетів</title>
 
     <!-- GitHub Pages SPA: відновлюємо URL після редиректу через 404.html -->
     <script>
@@ -4854,9 +4854,15 @@ function downloadImage(blob, filename) {
             document.getElementById('chatModal').style.display = 'flex';
             document.getElementById('chatInput').focus();
 
-            if (chatUnsubscribe) chatUnsubscribe();
-            chatUnsubscribe = onValue(ref(database, `messages/${currentChatId}`), snap => {
+            // Зупиняємо попередній polling
+            if (chatUnsubscribe) { clearInterval(chatUnsubscribe); chatUnsubscribe = null; }
+
+            // Функція завантаження повідомлень
+            const loadMessages = async () => {
+                const snap = await get(ref(database, `messages/${currentChatId}`));
                 const container = document.getElementById('chatMessages');
+                if (!container) return;
+
                 if (!snap.exists()) {
                     container.innerHTML = '<p style="text-align:center;color:var(--text-lighter);font-size:0.85rem;padding:2rem;">Напишіть першим!</p>';
                     return;
@@ -4865,7 +4871,8 @@ function downloadImage(blob, filename) {
                 snap.forEach(child => msgs.push({ id: child.key, ...child.val() }));
                 msgs.sort((a, b) => a.date - b.date);
 
-                // Рендер з датою-роздільником і галочками
+                const wasAtBottom = container.scrollHeight - container.scrollTop - container.clientHeight < 60;
+
                 let lastDateStr = '';
                 const html = msgs.map(m => {
                     const isMine = m.from === me;
@@ -4879,7 +4886,6 @@ function downloadImage(blob, filename) {
                         lastDateStr = dateStr;
                     }
 
-                    // Галочки тільки для моїх повідомлень
                     const ticks = isMine
                         ? m.read
                             ? `<span class="tick read">✓✓</span>`
@@ -4893,23 +4899,25 @@ function downloadImage(blob, filename) {
                 }).join('');
 
                 container.innerHTML = `<div class="chat-wrap">${html}</div>`;
-                container.scrollTop = container.scrollHeight;
+                if (wasAtBottom) container.scrollTop = container.scrollHeight;
 
-                // Позначаємо прочитані через 300ms
+                // Позначаємо прочитані
                 const unread = msgs.filter(m => m.from !== me && !m.read);
                 if (unread.length > 0) {
-                    setTimeout(() => {
-                        unread.forEach(m => {
-                            set(ref(database, `messages/${currentChatId}/${m.id}/read`), true);
-                        });
-                    }, 300);
+                    unread.forEach(m => {
+                        set(ref(database, `messages/${currentChatId}/${m.id}/read`), true);
+                    });
                 }
-            });
+            };
+
+            await loadMessages();
+            // Оновлюємо кожну секунду
+            chatUnsubscribe = setInterval(loadMessages, 1500);
         };
 
         window.closeChatModal = function() {
             document.getElementById('chatModal').style.display = 'none';
-            if (chatUnsubscribe) { chatUnsubscribe(); chatUnsubscribe = null; }
+            if (chatUnsubscribe) { clearInterval(chatUnsubscribe); chatUnsubscribe = null; }
             currentChatId = null;
         };
 
