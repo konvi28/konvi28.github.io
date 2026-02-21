@@ -6,7 +6,7 @@
     <link rel="icon" type="image/webp" href="logo.webp">
     <link rel="shortcut icon" type="image/webp" href="logo.webp">
     <link rel="apple-touch-icon" href="logo.webp">
-    <title>1Спільнота поетів</title>
+    <title>Спільнота поетів</title>
 
     <!-- GitHub Pages SPA: відновлюємо URL після редиректу через 404.html -->
     <script>
@@ -1707,12 +1707,12 @@
                         <ul id="headerTocList" style="list-style:none; margin:0; padding:0; max-height:200px; overflow-y:auto; display:flex; flex-direction:column; gap:0.15rem;"></ul>
                     </div>
                 </div>
-                <!-- Font Size Control -->
                 <div class="font-size-control" style="border-top: 1px solid var(--border-light); padding-top: 0.5rem; margin-top: 0.25rem;">
-                    <span class="font-size-label">🔡 Розмір:</span>
-                    <input type="range" class="font-size-slider" id="fontSizeSlider" min="0" max="100" value="50" step="5">
-                    <span class="font-size-value" id="fontSizeValue">100%</span>
+                    <span class="font-size-label">🔡 Розмір тексту:</span>
+                    <input type="range" class="font-size-slider" id="fontSizeSlider2" min="0" max="100" value="50" step="5">
+                    <span class="font-size-value" id="fontSizeValue2">100%</span>
                 </div>
+
             </div>
         </div>
         <!-- Filter toggle arrow -->
@@ -1742,6 +1742,11 @@
                 <div class="profile-hashtag-scroll" id="homeHashtagChips" style="display:none;">
                     <span class="home-hashtag-filter-label">#️⃣ Хештеги:</span>
                     <div id="homeHashtagChipsList" style="display:flex; gap:0.5rem; flex-wrap:nowrap;"></div>
+                </div>
+                <div class="font-size-control" style="border-top: 1px solid var(--border-light); padding-top: 0.5rem; margin-top: 0.25rem;">
+                    <span class="font-size-label">🔡 Розмір тексту:</span>
+                    <input type="range" class="font-size-slider" id="fontSizeSlider" min="0" max="100" value="50" step="5">
+                    <span class="font-size-value" id="fontSizeValue">100%</span>
                 </div>
             </div>
         </div>
@@ -5150,32 +5155,56 @@ function downloadImage(blob, filename) {
 
         // ---- FONT SIZE ----
         function initFontSizeSlider() {
-            const slider = document.getElementById('fontSizeSlider');
-            if (!slider) return;
             let savedSize = localStorage.getItem('fontSize');
             if (savedSize) {
                 const oldValue = parseInt(savedSize);
-                if (oldValue > 100) {
-                    savedSize = Math.round(((oldValue - 85) / (200 - 85)) * 100);
-                }
+                if (oldValue > 100) savedSize = String(Math.round(((oldValue - 85) / (200 - 85)) * 100));
             } else {
                 savedSize = '50';
             }
-            slider.value = savedSize;
+
+            // Ініціалізуємо всі слайдери на сторінці
+            ['fontSizeSlider', 'fontSizeSlider2'].forEach(id => {
+                const slider = document.getElementById(id);
+                if (!slider) return;
+                slider.value = savedSize;
+                slider.addEventListener('input', (e) => updateFontSize(e.target.value));
+            });
+
             updateFontSize(savedSize);
-            slider.addEventListener('input', (e) => updateFontSize(e.target.value));
         }
 
         function updateFontSize(size) {
             const sizeNum = parseInt(size);
             const multiplier = 0.5 + (sizeNum / 100) * 2.0;
-            const valueDisplay = document.getElementById('fontSizeValue');
-            if (valueDisplay) valueDisplay.textContent = sizeNum + '%';
+            window._fontMultiplier = multiplier;
+
+            // Синхронізуємо обидва слайдери і лейбли
+            ['fontSizeSlider', 'fontSizeSlider2'].forEach(id => {
+                const s = document.getElementById(id);
+                if (s) s.value = sizeNum;
+            });
+            ['fontSizeValue', 'fontSizeValue2'].forEach(id => {
+                const v = document.getElementById(id);
+                if (v) v.textContent = sizeNum + '%';
+            });
+
             localStorage.setItem('fontSize', size);
+            applyFontSizeToAll();
+        }
+
+        function applyFontSizeToAll() {
+            const multiplier = window._fontMultiplier || 1.0;
             document.querySelectorAll('.post-content').forEach(el => {
                 el.style.fontSize = (1.15 * multiplier) + 'rem';
             });
+            const postPageContent = document.getElementById('postPageContent');
+            if (postPageContent) postPageContent.style.fontSize = (1.25 * multiplier) + 'rem';
         }
+
+        // MutationObserver — автоматично застосовує розмір до нових постів після рендеру
+        const _fontObserver = new MutationObserver(() => applyFontSizeToAll());
+        _fontObserver.observe(document.body, { childList: true, subtree: true });
 
         // ---- BADGE ----
         function startMsgListener() {
