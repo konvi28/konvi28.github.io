@@ -6,7 +6,7 @@
     <link rel="icon" type="image/webp" href="logo.webp">
     <link rel="shortcut icon" type="image/webp" href="logo.webp">
     <link rel="apple-touch-icon" href="logo.webp">
-    <title>1 Спільнота поетів</title>
+    <title>Спільнота поетів</title>
 
     <!-- GitHub Pages SPA: відновлюємо URL після редиректу через 404.html -->
     <script>
@@ -1510,28 +1510,87 @@
         .dialog-preview { color: var(--text-lighter); font-size: 0.82rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 240px; }
         .dialog-unread {
             margin-left: auto; background: var(--accent); color: white;
-            border-radius: 50%; width: 20px; height: 20px;
+            border-radius: 50%; min-width: 20px; height: 20px; padding: 0 4px;
             font-size: 0.7rem; display: flex; align-items: center;
             justify-content: center; font-weight: 700; flex-shrink: 0;
         }
+
+        /* ---- Telegram-style chat ---- */
+        .chat-wrap {
+            display: flex;
+            flex-direction: column;
+            gap: 3px;
+            padding: 0.75rem 1rem;
+        }
+        .msg-row {
+            display: flex;
+            flex-direction: column;
+            max-width: 72%;
+        }
+        .msg-row.mine { align-self: flex-end; align-items: flex-end; }
+        .msg-row.theirs { align-self: flex-start; align-items: flex-start; }
+
+        /* Групування — зменшуємо відступ між повідомленнями одного автора */
+        .msg-row + .msg-row.mine,
+        .msg-row + .msg-row.theirs { margin-top: 1px; }
+        .msg-row.mine + .msg-row.theirs,
+        .msg-row.theirs + .msg-row.mine { margin-top: 8px; }
+
         .msg-bubble {
-            max-width: 75%; padding: 0.5rem 0.85rem;
-            border-radius: 14px; font-size: 0.92rem; line-height: 1.5;
+            padding: 0.45rem 0.75rem 0.45rem 0.75rem;
+            border-radius: 18px;
+            font-size: 0.92rem;
+            line-height: 1.45;
             word-break: break-word;
+            position: relative;
         }
         .msg-bubble.mine {
-            background: var(--accent); color: white;
-            align-self: flex-end; border-bottom-right-radius: 4px;
+            background: var(--accent);
+            color: white;
+            border-bottom-right-radius: 5px;
         }
         .msg-bubble.theirs {
-            background: var(--bg-secondary); color: var(--text-main);
-            align-self: flex-start; border-bottom-left-radius: 4px;
+            background: var(--bg-secondary);
+            color: var(--text-main);
+            border-bottom-left-radius: 5px;
         }
-        .msg-time { font-size: 0.7rem; opacity: 0.6; margin-top: 2px; display: block; }
+
+        /* Час + галочки в одному рядку */
+        .msg-meta {
+            display: flex;
+            align-items: center;
+            gap: 3px;
+            margin-top: 2px;
+            font-size: 0.68rem;
+            color: var(--text-lighter);
+            padding: 0 2px;
+        }
+        .msg-row.mine .msg-meta { justify-content: flex-end; }
+        .msg-row.theirs .msg-meta { justify-content: flex-start; }
+
+        /* Галочки */
+        .tick { font-size: 0.75rem; line-height: 1; }
+        .tick.sent { color: var(--text-lighter); }
+        .tick.read { color: #4fc3f7; } /* блакитні як в Telegram */
+        .msg-row.mine .tick.read { color: white; opacity: 0.9; }
+
+        /* Дата-роздільник */
+        .msg-date-sep {
+            text-align: center;
+            font-size: 0.75rem;
+            color: var(--text-lighter);
+            margin: 8px 0 4px;
+            position: relative;
+        }
+        .msg-date-sep span {
+            background: var(--bg-card);
+            padding: 2px 10px;
+            border-radius: 10px;
+            border: 1px solid var(--border);
+        }
+
         #msgBadge { display: none; }
-        #msgBadge.visible {
-            display: inline-flex !important;
-        }
+        #msgBadge.visible { display: inline-flex !important; }
 
     </style>
 </head>
@@ -1950,22 +2009,23 @@
     </div>
 
     <!-- Chat Modal -->
-    <div id="chatModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:1000; align-items:center; justify-content:center;">
-        <div style="background:var(--bg-card); border-radius:12px; width:100%; max-width:480px; max-height:80vh; display:flex; flex-direction:column; margin:1rem; box-shadow:0 8px 32px var(--shadow);">
-            <!-- Chat header -->
-            <div style="display:flex; align-items:center; justify-content:space-between; padding:1rem 1.25rem; border-bottom:1px solid var(--border);">
-                <div style="display:flex; align-items:center; gap:0.75rem;">
-                    <div id="chatAvatar" style="width:40px;height:40px;border-radius:50%;background:var(--bg-secondary);display:flex;align-items:center;justify-content:center;font-size:1.2rem;overflow:hidden;border:2px solid var(--accent);flex-shrink:0;">👤</div>
-                    <strong id="chatPartnerName" style="font-size:1rem; color:var(--text-main);">...</strong>
+    <div id="chatModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.55); z-index:1000; align-items:center; justify-content:center;">
+        <div style="background:var(--bg-card); border-radius:14px; width:100%; max-width:520px; height:min(600px, 88vh); display:flex; flex-direction:column; margin:1rem; box-shadow:0 12px 40px rgba(0,0,0,0.25); overflow:hidden;">
+            <!-- Chat header — telegram style -->
+            <div style="display:flex; align-items:center; gap:0.75rem; padding:0.75rem 1rem; background:var(--accent); color:white;">
+                <div id="chatAvatar" style="width:38px;height:38px;border-radius:50%;background:rgba(255,255,255,0.25);display:flex;align-items:center;justify-content:center;font-size:1.1rem;overflow:hidden;flex-shrink:0;font-weight:700;"></div>
+                <div style="flex:1; min-width:0;">
+                    <div id="chatPartnerName" style="font-weight:700; font-size:0.97rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">...</div>
+                    <div id="chatPartnerStatus" style="font-size:0.72rem; opacity:0.8;">в мережі</div>
                 </div>
-                <button onclick="closeChatModal()" style="background:none;border:none;font-size:1.3rem;cursor:pointer;color:var(--text-lighter);">✕</button>
+                <button onclick="closeChatModal()" style="background:none;border:none;font-size:1.3rem;cursor:pointer;color:white;opacity:0.85;padding:4px;">✕</button>
             </div>
             <!-- Messages area -->
-            <div id="chatMessages" style="flex:1; overflow-y:auto; padding:1rem; display:flex; flex-direction:column; gap:0.5rem; min-height:200px; max-height:50vh;"></div>
-            <!-- Input -->
-            <div style="padding:0.75rem 1rem; border-top:1px solid var(--border); display:flex; gap:0.5rem;">
-                <input id="chatInput" type="text" placeholder="Повідомлення..." style="flex:1; padding:0.5rem 0.75rem; border:1px solid var(--border); border-radius:8px; font-size:0.95rem; background:var(--bg-main); color:var(--text-main);" onkeypress="if(event.key==='Enter') sendMessage()">
-                <button onclick="sendMessage()" class="btn btn-primary" style="padding:0.5rem 1rem;">Надіслати</button>
+            <div id="chatMessages" style="flex:1; overflow-y:auto; display:flex; flex-direction:column; background:var(--bg-main); padding:0.5rem 0;"></div>
+            <!-- Input area -->
+            <div style="padding:0.6rem 0.75rem; border-top:1px solid var(--border); display:flex; gap:0.5rem; align-items:center; background:var(--bg-card);">
+                <input id="chatInput" type="text" placeholder="Повідомлення..." style="flex:1; padding:0.55rem 0.9rem; border:1px solid var(--border); border-radius:20px; font-size:0.93rem; background:var(--bg-main); color:var(--text-main); outline:none;" onkeypress="if(event.key==='Enter') sendMessage()">
+                <button onclick="sendMessage()" style="width:38px;height:38px;border-radius:50%;background:var(--accent);color:white;border:none;cursor:pointer;font-size:1.1rem;display:flex;align-items:center;justify-content:center;flex-shrink:0;">➤</button>
             </div>
         </div>
     </div>
@@ -4796,24 +4856,52 @@ function downloadImage(blob, filename) {
             chatUnsubscribe = onValue(ref(database, `messages/${currentChatId}`), snap => {
                 const container = document.getElementById('chatMessages');
                 if (!snap.exists()) {
-                    container.innerHTML = '<p style="text-align:center;color:var(--text-lighter);font-size:0.85rem;">Напишіть першим!</p>';
+                    container.innerHTML = '<p style="text-align:center;color:var(--text-lighter);font-size:0.85rem;padding:2rem;">Напишіть першим!</p>';
                     return;
                 }
                 const msgs = [];
                 snap.forEach(child => msgs.push({ id: child.key, ...child.val() }));
                 msgs.sort((a, b) => a.date - b.date);
-                container.innerHTML = msgs.map(m => {
+
+                // Рендер з датою-роздільником і галочками
+                let lastDateStr = '';
+                const html = msgs.map(m => {
                     const isMine = m.from === me;
-                    const time = new Date(m.date).toLocaleTimeString('uk-UA', { hour: '2-digit', minute: '2-digit' });
-                    return `<div style="display:flex;flex-direction:column;align-items:${isMine?'flex-end':'flex-start'};">
-                        <div class="msg-bubble ${isMine?'mine':'theirs'}">${escapeHtmlMsg(m.text)}</div>
-                        <span class="msg-time" style="align-self:${isMine?'flex-end':'flex-start'}">${time}</span>
+                    const d = new Date(m.date);
+                    const dateStr = d.toLocaleDateString('uk-UA', { day: 'numeric', month: 'long' });
+                    const time = d.toLocaleTimeString('uk-UA', { hour: '2-digit', minute: '2-digit' });
+
+                    let sep = '';
+                    if (dateStr !== lastDateStr) {
+                        sep = `<div class="msg-date-sep"><span>${dateStr}</span></div>`;
+                        lastDateStr = dateStr;
+                    }
+
+                    // Галочки тільки для моїх повідомлень
+                    const ticks = isMine
+                        ? m.read
+                            ? `<span class="tick read">✓✓</span>`
+                            : `<span class="tick sent">✓</span>`
+                        : '';
+
+                    return `${sep}<div class="msg-row ${isMine ? 'mine' : 'theirs'}">
+                        <div class="msg-bubble ${isMine ? 'mine' : 'theirs'}">${escapeHtmlMsg(m.text)}</div>
+                        <div class="msg-meta">${time}${ticks}</div>
                     </div>`;
                 }).join('');
-                msgs.filter(m => m.from !== me && !m.read).forEach(m => {
-                    set(ref(database, `messages/${currentChatId}/${m.id}/read`), true);
-                });
+
+                container.innerHTML = `<div class="chat-wrap">${html}</div>`;
                 container.scrollTop = container.scrollHeight;
+
+                // Позначаємо прочитані через 300ms
+                const unread = msgs.filter(m => m.from !== me && !m.read);
+                if (unread.length > 0) {
+                    setTimeout(() => {
+                        unread.forEach(m => {
+                            set(ref(database, `messages/${currentChatId}/${m.id}/read`), true);
+                        });
+                    }, 300);
+                }
             });
         };
 
@@ -4823,13 +4911,19 @@ function downloadImage(blob, filename) {
             currentChatId = null;
         };
 
+        let isSending = false;
         window.sendMessage = async function() {
             const me = window.currentUser?.uid;
             const input = document.getElementById('chatInput');
             const text = input.value.trim();
-            if (!text || !currentChatId || !me) return;
+            if (!text || !currentChatId || !me || isSending) return;
+            isSending = true;
             input.value = '';
-            await push(ref(database, `messages/${currentChatId}`), { from: me, text, date: Date.now(), read: false });
+            try {
+                await push(ref(database, `messages/${currentChatId}`), { from: me, text, date: Date.now(), read: false });
+            } finally {
+                isSending = false;
+            }
         };
 
         function escapeHtmlMsg(str = '') {
