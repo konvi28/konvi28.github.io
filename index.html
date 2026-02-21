@@ -4832,6 +4832,7 @@ function downloadImage(blob, filename) {
         // ---- CHAT ----
         let chatUnsubscribe = null;
         let currentChatId = null;
+        let currentLoadMessages = null;
 
         window.openChat = async function(targetUserId) {
             const me = window.currentUser?.uid;
@@ -4840,7 +4841,11 @@ function downloadImage(blob, filename) {
             console.log('[Chat] status:', status, '| me:', me, '| target:', targetUserId);
             if (status !== 'friends') { alert('Писати можна тільки друзям'); return; }
 
-            currentChatId = getChatId(me, targetUserId);
+            // Зупиняємо попередній polling перед зміною chatId
+            if (chatUnsubscribe) { chatUnsubscribe.stop(); chatUnsubscribe = null; }
+
+            const thisChatId = getChatId(me, targetUserId);
+            currentChatId = thisChatId;
             console.log('[Chat] chatId:', currentChatId);
             const partner = window.allUsers.find(u => u.id === targetUserId);
             const partnerName = partner?.name || 'Користувач';
@@ -4854,12 +4859,16 @@ function downloadImage(blob, filename) {
             document.getElementById('chatModal').style.display = 'flex';
             document.getElementById('chatInput').focus();
 
-            // Зупиняємо попередній polling
-            if (chatUnsubscribe) { clearInterval(chatUnsubscribe); chatUnsubscribe = null; }
-
-            // Функція завантаження повідомлень
+            // Функція завантаження повідомлень — прив'язана до конкретного thisChatId
             const loadMessages = async () => {
-                const snap = await get(ref(database, `messages/${currentChatId}`));
+                // Якщо чат вже змінився — не оновлюємо DOM
+                if (currentChatId !== thisChatId) return;
+
+                const snap = await get(ref(database, `messages/${thisChatId}`));
+
+                // Перевіряємо ще раз після await — чат міг змінитись поки чекали відповідь
+                if (currentChatId !== thisChatId) return;
+
                 const container = document.getElementById('chatMessages');
                 if (!container) return;
 
@@ -4905,20 +4914,30 @@ function downloadImage(blob, filename) {
                 const unread = msgs.filter(m => m.from !== me && !m.read);
                 if (unread.length > 0) {
                     unread.forEach(m => {
-                        set(ref(database, `messages/${currentChatId}/${m.id}/read`), true);
+                        set(ref(database, `messages/${thisChatId}/${m.id}/read`), true);
                     });
                 }
             };
 
+            currentLoadMessages = loadMessages;
             await loadMessages();
-            // Оновлюємо кожну секунду
-            chatUnsubscribe = setInterval(loadMessages, 1500);
+
+            // Polling без race condition: чекаємо завершення попереднього запиту
+            let pollActive = true;
+            chatUnsubscribe = { stop: () => { pollActive = false; } };
+            const poll = async () => {
+                if (!pollActive) return;
+                await loadMessages();
+                if (pollActive) setTimeout(poll, 1500);
+            };
+            setTimeout(poll, 1500);
         };
 
         window.closeChatModal = function() {
             document.getElementById('chatModal').style.display = 'none';
-            if (chatUnsubscribe) { clearInterval(chatUnsubscribe); chatUnsubscribe = null; }
+            if (chatUnsubscribe) { chatUnsubscribe.stop(); chatUnsubscribe = null; }
             currentChatId = null;
+            currentLoadMessages = null;
         };
 
         let isSending = false;
@@ -4933,8 +4952,11 @@ function downloadImage(blob, filename) {
             try {
                 await push(ref(database, `messages/${currentChatId}`), { from: me, text, date: Date.now(), read: false });
                 console.log('[Chat] message sent OK');
+                // Одразу оновлюємо повідомлення після відправки
+                if (currentLoadMessages) await currentLoadMessages();
             } catch(e) {
                 console.error('[Chat] send error:', e);
+                input.value = text; // повертаємо текст якщо помилка
             } finally {
                 isSending = false;
             }
