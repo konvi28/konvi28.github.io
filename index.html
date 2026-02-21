@@ -6,7 +6,7 @@
     <link rel="icon" type="image/webp" href="logo.webp">
     <link rel="shortcut icon" type="image/webp" href="logo.webp">
     <link rel="apple-touch-icon" href="logo.webp">
-    <title>Спільнота поетів</title>
+    <title>.Спільнота поетів</title>
 
     <!-- GitHub Pages SPA: відновлюємо URL після редиректу через 404.html -->
     <script>
@@ -1520,7 +1520,7 @@
             /* Post page */
             #postPage .container { padding: 0 0.75rem; }
             #postPageTitle { font-size: 1.6rem !important; }
-            #postPageContent { font-size: 1.05rem !important; }
+            #postPageContent { font-size: 1.05rem; }
 
             /* TOC */
             /* ── TOC ── */
@@ -1948,7 +1948,7 @@
                 <span class="post-type-badge" id="postPageBadge"></span>
                 <h1 id="postPageTitle" style="font-family: 'Philosopher', sans-serif; font-size: 2.4rem; color: var(--primary); margin: 0.8rem 0; line-height: 1.3;"></h1>
                 <div id="postPageDate" style="color: var(--text-light); font-size: 0.95rem; margin-bottom: 1.5rem; font-style: italic;"></div>
-                <div id="postPageContent" style="white-space: pre-wrap; line-height: 2; font-size: 1.25rem; margin-bottom: 1.5rem;"></div>
+                <div id="postPageContent" class="post-content" style="white-space: pre-wrap; line-height: 2; font-size: 1.25rem; margin-bottom: 1.5rem;"></div>
                 <div id="postPageHashtags" style="margin-bottom: 1.5rem;"></div>
                 <!-- Action buttons -->
                 <div style="display: flex; gap: 0.5rem; margin-bottom: 1rem; flex-wrap: wrap;">
@@ -2393,7 +2393,7 @@
                 return `<div class="random-card" onclick="showPost('${post.id}')">
                         <div class="random-card-title">${post.title || 'Без назви'}</div>
                         <div class="random-card-author" onclick="event.stopPropagation(); showUserProfile('${post.userId}')" style="cursor:pointer;">&#9997;&#65039; ${getUserName(post.userId)}</div>
-                        <div class="random-card-content" style="white-space:${ws};">${preview}</div>
+                        <div class="random-card-content post-content" style="white-space:${ws};">${preview}</div>
                     </div>`;
             }).join('');
         }
@@ -2415,7 +2415,7 @@
                 return `<div class="random-card" onclick="showPost('${post.id}')">
                         <div class="random-card-title">${post.title || 'Без назви'}</div>
                         <div class="random-card-author" onclick="event.stopPropagation(); showUserProfile('${post.userId}')" style="cursor:pointer;">✍️ ${getUserName(post.userId)}</div>
-                        <div class="random-card-content" style="white-space:pre-wrap;">${preview}</div>
+                        <div class="random-card-content post-content" style="white-space:pre-wrap;">${preview}</div>
                     </div>`;
             }).join('');
         }
@@ -3590,7 +3590,7 @@
                         <span class="post-type-badge">${post.type === 'poetry' ? 'ПОЕЗІЯ' : 'ДУМКА'}</span>
                         <h2 style="font-family: 'Philosopher', sans-serif; font-size: 1.8rem; color: var(--primary); margin: 0.8rem 0; cursor:pointer;" onclick="showPost('${post.id}')">${post.title || 'Без назви'}</h2>
                         <div style="color: var(--text-light); font-size: 0.95rem; margin-bottom: 1.2rem; font-style: italic;">📅 ${new Date(post.date).toLocaleDateString('uk-UA')}</div>
-                        <div style="white-space: pre-wrap; line-height: 1.8; margin-bottom: 1rem;">${content}</div>
+                        <div class="post-content" style="white-space: pre-wrap; line-height: 1.8; margin-bottom: 1rem;">${content}</div>
                         ${post.hashtags ? '<div style="margin: 1rem 0; color: var(--accent); font-weight: 600;">' + post.hashtags + '</div>' : ''}
                         <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
                             <button class="btn ${isFavorite ? 'btn-primary' : 'btn-secondary'} btn-small" onclick="toggleProfileFavorite('${post.id}')">
@@ -4082,7 +4082,7 @@
                     return `<div class="random-card" onclick="showPost('${post.id}')">
                         <div class="random-card-title">${post.title || 'Без назви'}</div>
                         <div class="random-card-author" onclick="event.stopPropagation(); showUserProfile('${post.userId}')" style="cursor:pointer;">&#9997;&#65039; ${getUserName(post.userId)}</div>
-                        <div class="random-card-content" style="white-space:pre-wrap;">${preview}</div>
+                        <div class="random-card-content post-content" style="white-space:pre-wrap;">${preview}</div>
                     </div>`;
                 }).join('');
             }
@@ -4103,7 +4103,7 @@
                     return `<div class="random-card" onclick="showPost('${post.id}')">
                         <div class="random-card-title">${post.title || 'Без назви'}</div>
                         <div class="random-card-author" onclick="event.stopPropagation(); showUserProfile('${post.userId}')" style="cursor:pointer;">&#9997;&#65039; ${getUserName(post.userId)}</div>
-                        <div class="random-card-content" style="white-space:normal;">${preview}</div>
+                        <div class="random-card-content post-content" style="white-space:normal;">${preview}</div>
                     </div>`;
                 }).join('');
             }
