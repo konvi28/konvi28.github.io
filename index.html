@@ -6,7 +6,7 @@
     <link rel="icon" type="image/webp" href="logo.webp">
     <link rel="shortcut icon" type="image/webp" href="logo.webp">
     <link rel="apple-touch-icon" href="logo.webp">
-    <title>Спільнота поетів</title>
+    <title>2222Спільнота поетів</title>
 
     <!-- GitHub Pages SPA: відновлюємо URL після редиректу через 404.html -->
     <script>
@@ -2033,7 +2033,7 @@
     <script type="module">
         // Firebase imports
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
-        import { getDatabase, ref, set, get, push, onValue, remove } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
+        import { getDatabase, ref, set, get, push, onValue, remove, goOffline, goOnline } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
         import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
 
         // Firebase configuration
@@ -4865,8 +4865,10 @@ function downloadImage(blob, filename) {
             const loadMessages = async () => {
                 if (currentChatId !== thisChatId) return;
                 try {
+                    goOffline(database);
+                    goOnline(database);
                     const snap = await get(ref(database, `messages/${thisChatId}`));
-                    console.log('[Chat] poll get done, exists:', snap.exists(), 'active:', pollActive);
+                    console.log('[Chat] poll get done, exists:', snap.exists(), 'active:', pollActive, 'numChildren:', snap.numChildren());
                     if (currentChatId !== thisChatId) return;
                     const container = document.getElementById('chatMessages');
                     if (!container) return;
