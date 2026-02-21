@@ -6,7 +6,7 @@
     <link rel="icon" type="image/webp" href="logo.webp">
     <link rel="shortcut icon" type="image/webp" href="logo.webp">
     <link rel="apple-touch-icon" href="logo.webp">
-    <title>Спільнота поетів</title>
+    <title>1Спільнота поетів</title>
 
     <!-- GitHub Pages SPA: відновлюємо URL після редиректу через 404.html -->
     <script>
@@ -682,6 +682,61 @@
         .post-content {
             color: var(--text-main);
             line-height: 1.95;
+            font-size: 1.15rem;
+        }
+
+        .font-size-control {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+        .font-size-label {
+            font-family: 'Philosopher', sans-serif;
+            font-size: 0.85rem;
+            color: var(--text-light);
+            font-weight: 600;
+            white-space: nowrap;
+        }
+        .font-size-slider {
+            flex: 1;
+            -webkit-appearance: none;
+            appearance: none;
+            height: 6px;
+            background: var(--border);
+            border-radius: 5px;
+            outline: none;
+            cursor: pointer;
+        }
+        .font-size-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 18px;
+            height: 18px;
+            background: var(--accent);
+            border-radius: 50%;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .font-size-slider::-webkit-slider-thumb:hover {
+            background: var(--accent-light);
+            transform: scale(1.2);
+        }
+        .font-size-slider::-moz-range-thumb {
+            width: 18px;
+            height: 18px;
+            background: var(--accent);
+            border-radius: 50%;
+            cursor: pointer;
+            border: none;
+            transition: all 0.2s ease;
+        }
+        .font-size-value {
+            font-family: 'Philosopher', sans-serif;
+            font-size: 0.85rem;
+            color: var(--accent);
+            font-weight: 700;
+            min-width: 38px;
+            text-align: center;
         }
 
         .post-meta {
@@ -1652,6 +1707,12 @@
                         <ul id="headerTocList" style="list-style:none; margin:0; padding:0; max-height:200px; overflow-y:auto; display:flex; flex-direction:column; gap:0.15rem;"></ul>
                     </div>
                 </div>
+                <!-- Font Size Control -->
+                <div class="font-size-control" style="border-top: 1px solid var(--border-light); padding-top: 0.5rem; margin-top: 0.25rem;">
+                    <span class="font-size-label">🔡 Розмір:</span>
+                    <input type="range" class="font-size-slider" id="fontSizeSlider" min="0" max="100" value="50" step="5">
+                    <span class="font-size-value" id="fontSizeValue">100%</span>
+                </div>
             </div>
         </div>
         <!-- Filter toggle arrow -->
@@ -2233,6 +2294,7 @@
                     <button class="btn btn-primary" onclick="handleLogout()">Вийти</button>
                 `;
                 setTimeout(() => startMsgListener(), 0);
+                setTimeout(() => initFontSizeSlider(), 0);
                 setTimeout(syncMobileUserMenu, 0);
             } else {
                 // User is signed out
@@ -5086,6 +5148,35 @@ function downloadImage(blob, filename) {
             }).join('');
         }
 
+        // ---- FONT SIZE ----
+        function initFontSizeSlider() {
+            const slider = document.getElementById('fontSizeSlider');
+            if (!slider) return;
+            let savedSize = localStorage.getItem('fontSize');
+            if (savedSize) {
+                const oldValue = parseInt(savedSize);
+                if (oldValue > 100) {
+                    savedSize = Math.round(((oldValue - 85) / (200 - 85)) * 100);
+                }
+            } else {
+                savedSize = '50';
+            }
+            slider.value = savedSize;
+            updateFontSize(savedSize);
+            slider.addEventListener('input', (e) => updateFontSize(e.target.value));
+        }
+
+        function updateFontSize(size) {
+            const sizeNum = parseInt(size);
+            const multiplier = 0.5 + (sizeNum / 100) * 2.0;
+            const valueDisplay = document.getElementById('fontSizeValue');
+            if (valueDisplay) valueDisplay.textContent = sizeNum + '%';
+            localStorage.setItem('fontSize', size);
+            document.querySelectorAll('.post-content').forEach(el => {
+                el.style.fontSize = (1.15 * multiplier) + 'rem';
+            });
+        }
+
         // ---- BADGE ----
         function startMsgListener() {
             const me = window.currentUser?.uid;
@@ -5110,6 +5201,10 @@ function downloadImage(blob, filename) {
                 }
             });
         }
+
+
+        // Ініціалізуємо повзунок розміру шрифту одразу при завантаженні
+        document.addEventListener('DOMContentLoaded', () => initFontSizeSlider());
 
 </script>
 
