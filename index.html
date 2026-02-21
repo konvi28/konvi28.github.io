@@ -6,7 +6,7 @@
     <link rel="icon" type="image/webp" href="logo.webp">
     <link rel="shortcut icon" type="image/webp" href="logo.webp">
     <link rel="apple-touch-icon" href="logo.webp">
-    <title>444Спільнота поетів</title>
+    <title>Спільнота поетів</title>
 
     <!-- GitHub Pages SPA: відновлюємо URL після редиректу через 404.html -->
     <script>
@@ -4004,6 +4004,10 @@
             if (user && userData) {
                 mobile.innerHTML = `
                     <div class="mobile-user-name">👤 ${userData.name || 'Користувач'}</div>
+                    <button class="btn btn-secondary" onclick="showMessages(); closeMobileMenu()" style="position:relative;">
+                        💬 Повідомлення
+                        <span id="msgBadgeMobile" style="display:none; position:absolute; top:-6px; right:-6px; background:#e74c3c; color:white; border-radius:50%; width:18px; height:18px; font-size:0.7rem; align-items:center; justify-content:center; font-weight:700; line-height:1;"></span>
+                    </button>
                     ${window.isAdmin ? '<button class="btn btn-secondary" onclick="showAdminPanel(); closeMobileMenu()">⚙️ Адмін</button>' : ''}
                     <button class="btn btn-secondary" onclick="showMyProfile(); closeMobileMenu()">Мій профіль</button>
                     <button class="btn btn-primary" onclick="handleLogout(); closeMobileMenu()">Вийти</button>
@@ -5031,6 +5035,11 @@ function downloadImage(blob, filename) {
                 if (badge) {
                     badge.textContent = total > 0 ? total : '';
                     badge.style.display = total > 0 ? 'inline-flex' : 'none';
+                }
+                const badgeMobile = document.getElementById('msgBadgeMobile');
+                if (badgeMobile) {
+                    badgeMobile.textContent = total > 0 ? total : '';
+                    badgeMobile.style.display = total > 0 ? 'inline-flex' : 'none';
                 }
             });
         }
