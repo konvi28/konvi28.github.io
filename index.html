@@ -6,7 +6,7 @@
     <link rel="icon" type="image/webp" href="logo.webp">
     <link rel="shortcut icon" type="image/webp" href="logo.webp">
     <link rel="apple-touch-icon" href="logo.webp">
-    <title>111Спільнота поетів</title>
+    <title>Спільнота поетів</title>
 
     <!-- GitHub Pages SPA: відновлюємо URL після редиректу через 404.html -->
     <script>
@@ -4859,9 +4859,11 @@ function downloadImage(blob, filename) {
             document.getElementById('chatInput').focus();
 
             // onValue — realtime listener, спрацьовує одразу і при кожній зміні в БД
+            console.log('[Chat] subscribing onValue for chatId:', currentChatId);
             chatUnsubscribe = onValue(ref(database, `messages/${currentChatId}`), (snap) => {
+                console.log('[Chat] onValue fired! exists:', snap.exists(), 'size:', snap.size);
                 const container = document.getElementById('chatMessages');
-                if (!container) return;
+                if (!container) { console.warn('[Chat] no container!'); return; }
 
                 if (!snap.exists()) {
                     container.innerHTML = '<p style="text-align:center;color:var(--text-lighter);font-size:0.85rem;padding:2rem;">Напишіть першим!</p>';
