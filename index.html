@@ -6,7 +6,7 @@
     <link rel="icon" type="image/webp" href="logo.webp">
     <link rel="shortcut icon" type="image/webp" href="logo.webp">
     <link rel="apple-touch-icon" href="logo.webp">
-    <title>Спільнота поетів</title>
+    <title>..Спільнота поетів</title>
 
     <!-- GitHub Pages SPA: відновлюємо URL після редиректу через 404.html -->
     <script>
@@ -2352,6 +2352,7 @@
                     <button class="btn btn-primary" onclick="handleLogout()">Вийти</button>
                 `;
                 setTimeout(() => startMsgListener(), 0);
+                setTimeout(() => deleteOldMessages(), 3000); // чистимо старі повідомлення через 3с
                 setTimeout(() => initFontSizeSlider(), 0);
                 setTimeout(syncMobileUserMenu, 0);
             } else {
@@ -5715,6 +5716,45 @@ function downloadImage(blob, filename) {
         window.closeFriendsModal = function() {
             document.getElementById('friendsModal').style.display = 'none';
         };
+
+        // ---- CLEANUP OLD MESSAGES ----
+        async function deleteOldMessages() {
+            const me = window.currentUser?.uid;
+            if (!me) return;
+            try {
+                const token = await window.currentUser.getIdToken();
+                const cutoff = Date.now() - 30 * 24 * 60 * 60 * 1000; // 30 днів
+
+                // Отримуємо всі чати де є повідомлення
+                const resp = await fetch(`https://poetry-blog-ff72f-default-rtdb.europe-west1.firebasedatabase.app/messages.json?auth=${token}&shallow=true`);
+                const chats = await resp.json();
+                if (!chats) return;
+
+                // Перевіряємо тільки чати де є поточний юзер
+                const myChatIds = Object.keys(chats).filter(chatId => chatId.includes(me));
+                if (myChatIds.length === 0) return;
+
+                for (const chatId of myChatIds) {
+                    const msgsResp = await fetch(`https://poetry-blog-ff72f-default-rtdb.europe-west1.firebasedatabase.app/messages/${chatId}.json?auth=${token}`);
+                    const msgs = await msgsResp.json();
+                    if (!msgs) continue;
+
+                    const toDelete = Object.entries(msgs)
+                        .filter(([, m]) => m.date && m.date < cutoff)
+                        .map(([id]) => id);
+
+                    for (const msgId of toDelete) {
+                        await fetch(`https://poetry-blog-ff72f-default-rtdb.europe-west1.firebasedatabase.app/messages/${chatId}/${msgId}.json?auth=${token}`, { method: 'DELETE' });
+                    }
+
+                    if (toDelete.length > 0) {
+                        console.log(`🧹 Видалено ${toDelete.length} старих повідомлень з чату ${chatId}`);
+                    }
+                }
+            } catch(e) {
+                console.warn('Cleanup error:', e);
+            }
+        }
 
         // ---- BADGE ----
         function startMsgListener() {
