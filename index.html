@@ -2290,15 +2290,19 @@
                 const isAdminEmail = email === 'krasovsky.oleg.seo@gmail.com';
 
                 // Create user profile in database
+                const userSlug = await makeUniqueSlug(toSlug(name), 'slugs/users');
                 await set(ref(database, `users/${user.uid}`), {
                     name: name,
                     email: email,
+                    slug: userSlug,
                     createdAt: Date.now(),
                     postsCount: 0,
                     poetryCount: 0,
                     thoughtsCount: 0,
                     isAdmin: isAdminEmail
                 });
+                // Зберігаємо індекс slug → uid
+                await set(ref(database, `slugs/users/${userSlug}`), user.uid);
 
                 if (isAdminEmail) {
                     alert('✅ Реєстрація успішна! Ви отримали права адміністратора.');
@@ -2401,6 +2405,38 @@
                     // Для інших сторінок — перезапускаємо роутер з даними
                     handleRoute();
                 }
+            }
+        }
+
+
+        // ============================
+        // ======= SLUG UTILS =========
+        // ============================
+        function toSlug(text) {
+            const map = {
+                'а':'a','б':'b','в':'v','г':'h','ґ':'g','д':'d','е':'e','є':'ye',
+                'ж':'zh','з':'z','и':'y','і':'i','ї':'yi','й':'y','к':'k','л':'l',
+                'м':'m','н':'n','о':'o','п':'p','р':'r','с':'s','т':'t','у':'u',
+                'ф':'f','х':'kh','ц':'ts','ч':'ch','ш':'sh','щ':'shch','ь':'',
+                'ю':'yu','я':'ya','ё':'yo','э':'e','ъ':'','ы':'y'
+            };
+            return text.toLowerCase()
+                .split('').map(c => map[c] !== undefined ? map[c] : c).join('')
+                .replace(/[^a-z0-9]+/g, '-')
+                .replace(/^-+|-+$/g, '')
+                .substring(0, 60);
+        }
+
+        async function makeUniqueSlug(base, path, existingId = null) {
+            // Check if slug is taken in Firebase, add number suffix if needed
+            const token = window.currentUser ? await window.currentUser.getIdToken() : '';
+            let slug = base;
+            let i = 2;
+            while (true) {
+                const resp = await fetch(`${DB}/${path}/${slug}.json?auth=${token}`);
+                const val = await resp.json();
+                if (!val || val === existingId) return slug;
+                slug = base + '-' + i++;
             }
         }
 
@@ -2678,6 +2714,8 @@
             }
 
             try {
+                const postSlugBase = toSlug(title) || 'post';
+                const postSlug = await makeUniqueSlug(postSlugBase, 'slugs/posts');
                 const newPostRef = push(ref(database, 'posts'));
                 await set(newPostRef, {
                     userId: window.currentUser.uid,
@@ -2686,8 +2724,11 @@
                     content: content,
                     hashtags: hashtags,
                     date: Date.now(),
-                    featured: false
+                    featured: false,
+                    slug: postSlug
                 });
+                // Зберігаємо індекс slug → postId
+                await set(ref(database, `slugs/posts/${postSlug}`), newPostRef.key);
 
                 // Update user stats
                 const userSnapshot = await get(ref(database, `users/${window.currentUser.uid}`));
@@ -2790,10 +2831,12 @@
             document.getElementById('bioEditForm').style.display = 'none';
 
             // SEO
+            const profileSlugUrl = userData.slug ? '/profile/' + userData.slug : '/profile/' + userId;
+            if (userData.slug) updateURL(profileSlugUrl.replace('/',''), true);
             updateMeta({
                 title: `Персональна сторінка ${userData.name || 'автора'}`,
                 description: userData.bio ? userData.bio.substring(0, 160) : `Персональна сторінка автора ${userData.name || ''} на платформі PoetsSociety`,
-                url: '/profile/' + userId,
+                url: profileSlugUrl,
                 image: userData.avatarUrl || undefined
             });
 
@@ -2864,7 +2907,13 @@
                 const userSnapshot = await get(userRef);
                 const userData = userSnapshot.val();
 
-                await set(userRef, { ...userData, bio, avatarUrl });
+                // Генеруємо slug якщо ще немає
+                let slug = userData.slug;
+                if (!slug) {
+                    slug = await makeUniqueSlug(toSlug(userData.name || 'poet'), 'slugs/users', window.currentUser.uid);
+                    await set(ref(database, `slugs/users/${slug}`), window.currentUser.uid);
+                }
+                await set(userRef, { ...userData, bio, avatarUrl, slug });
 
                 // Оновлюємо відображення
                 const bioText = document.getElementById('profileBioText');
@@ -3967,7 +4016,9 @@
         }
 
         window.showPost = function(postId) {
-            updateURL('post/' + postId, true);
+            const postData = window.allPosts.find(p => p.id === postId);
+            const postUrlPath = (postData && postData.slug) ? 'post/' + postData.slug : 'post/' + postId;
+            updateURL(postUrlPath, true);
             navigateToPost(postId);
         };
 
@@ -4371,18 +4422,47 @@
             updateMeta({ title: 'Адмін панель', url: '/admin' });
         }
 
+
+        // Отримати slug юзера (з кешу allUsers або Firebase)
+        async function getUserSlugUrl(userId) {
+            const user = (window.allUsers || []).find(u => u.id === userId);
+            if (user && user.slug) return '/profile/' + user.slug;
+            return '/profile/' + userId; // fallback to id
+        }
+
+        // Отримати slug поста
+        function getPostSlugUrl(post) {
+            if (post && post.slug) return '/post/' + post.slug;
+            return '/post/' + post.id;
+        }
+
+        // Отримати slug групи
+        function getGroupSlugUrl(group) {
+            if (group && group.slug) return '/group/' + group.slug;
+            return '/group/' + group.id;
+        }
+
+        // Resolve slug to ID via Firebase index
+        async function resolveSlug(type, slug) {
+            const resp = await fetch(`https://poetry-blog-ff72f-default-rtdb.europe-west1.firebasedatabase.app/slugs/${type}/${slug}.json`);
+            const id = await resp.json();
+            return id || null;
+        }
+
         // Роутер - обробляє зміни URL
-        function handleRoute() {
-            if (isNavigating) return; // Ігноруємо якщо ми самі змінюємо URL
+        async function handleRoute() {
+            if (isNavigating) return;
             
             const route = getCurrentRoute();
             const parts = route.split('/');
             const page = parts[0];
+            const slug = parts[1];
 
             console.log('Routing to:', route);
 
             switch(page) {
                 case 'home':
+                case '':
                     navigateToHome();
                     break;
                 
@@ -4395,19 +4475,40 @@
                     break;
                 
                 case 'post':
-                    if (parts[1]) {
-                        navigateToPost(parts[1]);
+                    if (slug) {
+                        // Спробуємо розпізнати як slug або як Firebase ID
+                        const postId = await resolveSlug('posts', slug).catch(() => null);
+                        navigateToPost(postId || slug);
                     } else {
                         navigateToHome();
                     }
                     break;
 
                 case 'profile':
-                    if (parts[1]) {
-                        navigateToUserProfile(parts[1]);
+                    if (slug) {
+                        // Спробуємо розпізнати як slug або як Firebase UID
+                        const uid = await resolveSlug('users', slug).catch(() => null);
+                        navigateToUserProfile(uid || slug);
                     } else {
                         navigateToMyProfile();
                     }
+                    break;
+
+                case 'group':
+                    if (slug) {
+                        const groupId = await resolveSlug('groups', slug).catch(() => null);
+                        if (groupId) {
+                            window.showGroupPage(groupId);
+                        } else {
+                            window.showGroupPage(slug); // fallback
+                        }
+                    } else {
+                        window.showGroups();
+                    }
+                    break;
+
+                case 'groups':
+                    window.showGroups();
                     break;
                 
                 case 'admin':
@@ -5500,7 +5601,9 @@ function downloadImage(blob, filename) {
                 : '🫂';
 
             document.getElementById('groupPageName').textContent = g.name;
-            if (typeof updateMeta === 'function') updateMeta({ title: `Поетична група ${g.name}`, description: g.description || `Поетична група ${g.name} на PoetsSociety`, url: '/group/' + groupId });
+            const groupUrlPath = g.slug ? '/group/' + g.slug : '/group/' + groupId;
+            if (g.slug && typeof updateURL === 'function') updateURL('group/' + g.slug, true);
+            if (typeof updateMeta === 'function') updateMeta({ title: `Поетична група ${g.name}`, description: g.description || `Поетична група ${g.name} на PoetsSociety`, url: groupUrlPath });
             document.getElementById('groupPageDesc').textContent = g.description || '';
             const memberCount = g.members ? Object.keys(g.members).length : 0;
             const postCount = g.posts ? Object.keys(g.posts).length : 0;
@@ -5606,11 +5709,17 @@ function downloadImage(blob, filename) {
 
             const _tok7 = await window.currentUser.getIdToken();
             const _newId = 'g' + Date.now();
+            const groupSlug = await makeUniqueSlug(toSlug(name) || 'group', 'slugs/groups');
             await fetch(`https://poetry-blog-ff72f-default-rtdb.europe-west1.firebasedatabase.app/groups/${_newId}.json?auth=${_tok7}`, {
                 method: 'PUT', headers: {'Content-Type':'application/json'},
                 body: JSON.stringify({ name, description: desc, avatarUrl: avatar, tag,
-                    adminId: me, createdAt: Date.now(),
+                    adminId: me, createdAt: Date.now(), slug: groupSlug,
                     members: { [me]: { joinedAt: Date.now() } } })
+            });
+            // Зберігаємо індекс slug → groupId
+            await fetch(`https://poetry-blog-ff72f-default-rtdb.europe-west1.firebasedatabase.app/slugs/groups/${groupSlug}.json?auth=${_tok7}`, {
+                method: 'PUT', headers: {'Content-Type':'application/json'},
+                body: JSON.stringify(_newId)
             });
             closeCreateGroupModal();
             document.getElementById('groupNameInput').value = '';
