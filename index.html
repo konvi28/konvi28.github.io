@@ -6,7 +6,7 @@
     <link rel="icon" type="image/webp" href="logo.webp">
     <link rel="shortcut icon" type="image/webp" href="logo.webp">
     <link rel="apple-touch-icon" href="logo.webp">
-    <title>Спільнота поетів</title>
+    <title>.Спільнота поетів</title>
 
     <!-- GitHub Pages SPA: відновлюємо URL після редиректу через 404.html -->
     <script>
@@ -2153,6 +2153,7 @@
         </div>
     </div>
 
+
     </div><!-- /pagesWrapper -->
 
     <!-- Chat Modal -->
@@ -2580,7 +2581,10 @@
         };
 
         window.showGroups = function() {
-            hideAllPages();
+            if (typeof updateURL === 'function') updateURL('groups', true);
+            hideAllPagesInternal ? hideAllPagesInternal() : hideAllPages();
+            if (typeof hideHeaderFilter === 'function') hideHeaderFilter();
+            if (typeof setHomeSearchVisible === 'function') setHomeSearchVisible(false);
             document.getElementById('groupsPage').style.display = 'block';
             const btn = document.getElementById('createGroupBtn');
             if (btn) btn.style.display = window.currentUser ? 'block' : 'none';
@@ -2588,7 +2592,10 @@
         };
 
         window.showGroupPage = function(groupId) {
-            hideAllPages();
+            if (typeof updateURL === 'function') updateURL('group/' + groupId, true);
+            hideAllPagesInternal ? hideAllPagesInternal() : hideAllPages();
+            if (typeof hideHeaderFilter === 'function') hideHeaderFilter();
+            if (typeof setHomeSearchVisible === 'function') setHomeSearchVisible(false);
             document.getElementById('groupPage').style.display = 'block';
             loadGroupPage(groupId);
         };
