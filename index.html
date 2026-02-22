@@ -2427,13 +2427,14 @@
                 .substring(0, 60);
         }
 
+        const FIREBASE_DB_URL = 'https://poetry-blog-ff72f-default-rtdb.europe-west1.firebasedatabase.app';
+
         async function makeUniqueSlug(base, path, existingId = null) {
-            // Check if slug is taken in Firebase, add number suffix if needed
             const token = window.currentUser ? await window.currentUser.getIdToken() : '';
-            let slug = base;
+            let slug = base || 'post';
             let i = 2;
             while (true) {
-                const resp = await fetch(`${DB}/${path}/${slug}.json?auth=${token}`);
+                const resp = await fetch(`${FIREBASE_DB_URL}/${path}/${slug}.json?auth=${token}`);
                 const val = await resp.json();
                 if (!val || val === existingId) return slug;
                 slug = base + '-' + i++;
