@@ -1662,6 +1662,7 @@
                 <a href="#" class="nav-link" onclick="showHome()">Головна</a>
                 <a href="#" class="nav-link" onclick="showPoets()">Поети</a>
                 <a href="#" class="nav-link" onclick="showAllPosts()">Всі публікації</a>
+                <a href="#" class="nav-link" onclick="showGroups()">Групи</a>
             </nav>
             <div class="user-menu" id="userMenu">
                 <button class="btn btn-secondary" onclick="showAuthModal('login')">Увійти</button>
@@ -1677,6 +1678,7 @@
             <a href="#" class="mobile-nav-link" onclick="showHome(); closeMobileMenu()">🏠 Головна</a>
             <a href="#" class="mobile-nav-link" onclick="showPoets(); closeMobileMenu()">👥 Поети</a>
             <a href="#" class="mobile-nav-link" onclick="showAllPosts(); closeMobileMenu()">📚 Всі публікації</a>
+            <a href="#" class="mobile-nav-link" onclick="showGroups(); closeMobileMenu()">🫂 Групи</a>
             <div class="mobile-menu-divider"></div>
             <div id="mobileUserMenu"></div>
         </div>
@@ -1791,6 +1793,17 @@
                     </div>
                 </div>
 
+                <!-- Groups Block -->
+                <div class="card home-section-card">
+                    <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:1rem; flex-wrap:wrap; gap:0.5rem;">
+                        <h2 class="card-title" style="margin:0;">🫂 Групи</h2>
+                        <button class="btn btn-secondary btn-small" onclick="showGroups()">Всі групи →</button>
+                    </div>
+                    <div id="homeGroupsPreview" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(260px, 1fr)); gap:1rem;">
+                        <div class="loading">Завантаження...</div>
+                    </div>
+                </div>
+
                 <!-- Bottom Grid -->
                 <div class="home-bottom-grid">
                     <!-- Users List -->
@@ -1896,6 +1909,10 @@
                 </div>
 
                 <div id="profileStats" style="color: var(--text-light);"></div>
+                <div id="profileGroupsSection" style="margin-top:0.75rem; display:none;">
+                    <div style="font-size:0.85rem; color:var(--text-lighter); margin-bottom:0.4rem; font-family:'Philosopher',sans-serif;">🫂 Групи:</div>
+                    <div id="profileGroupsList" style="display:flex; flex-wrap:wrap; gap:0.4rem;"></div>
+                </div>
             </div>
 
             <!-- Search results banner for profile -->
@@ -2097,6 +2114,36 @@
     </div>
 
     <!-- Messages Page -->
+    <!-- Groups Page -->
+    <div id="groupsPage" style="display:none; max-width:1100px; margin:0 auto; padding:1.5rem 1rem;">
+        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:1.5rem; flex-wrap:wrap; gap:1rem;">
+            <h2 class="card-title" style="margin:0;">🫂 Групи за інтересами</h2>
+            <button class="btn btn-primary" id="createGroupBtn" style="display:none;" onclick="showCreateGroupModal()">➕ Створити групу</button>
+        </div>
+        <div id="groupsList" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(300px, 1fr)); gap:1.5rem;">
+            <div class="loading">Завантаження...</div>
+        </div>
+    </div>
+
+    <!-- Single Group Page -->
+    <div id="groupPage" style="display:none; max-width:900px; margin:0 auto; padding:1.5rem 1rem;">
+        <div class="card" style="margin-bottom:1.5rem;">
+            <button class="btn btn-secondary btn-small" onclick="showGroups()" style="margin-bottom:1rem;">← Всі групи</button>
+            <div style="display:flex; align-items:center; gap:1.25rem; margin-bottom:1rem; flex-wrap:wrap;">
+                <div id="groupPageAvatar" style="width:72px;height:72px;border-radius:50%;background:var(--accent-light);display:flex;align-items:center;justify-content:center;font-size:2rem;flex-shrink:0;overflow:hidden;"></div>
+                <div style="flex:1; min-width:0;">
+                    <h2 id="groupPageName" style="font-family:'Philosopher',sans-serif; color:var(--primary); margin:0 0 0.25rem;"></h2>
+                    <div id="groupPageDesc" style="color:var(--text-light); font-size:0.95rem; margin-bottom:0.5rem;"></div>
+                    <div id="groupPageMeta" style="color:var(--text-lighter); font-size:0.85rem;"></div>
+                </div>
+            </div>
+            <div id="groupPageBtns" style="display:flex; gap:0.5rem; flex-wrap:wrap;"></div>
+        </div>
+        <div id="groupPagePosts">
+            <div class="loading">Завантаження...</div>
+        </div>
+    </div>
+
     <div id="messagesPage" style="display:none; max-width:700px; margin:0 auto; padding:1.5rem 1rem;">
         <div class="card">
             <h2 class="card-title">💬 Повідомлення</h2>
@@ -2323,6 +2370,7 @@
 
         // Перерендерити головну після того, як завантажились обидва масиви
         function refreshHomeIfReady() {
+            loadHomeGroupsPreview();
             if (window._postsReady && window._usersReady) {
                 const route = getCurrentRoute();
                 const page = route.split('/')[0];
@@ -2506,7 +2554,7 @@
 
         // Navigation Functions
         function hideAllPages() {
-            ['homePage','profilePage','allPostsPage','poetsPage','adminPage','postPage'].forEach(id => {
+            ['homePage','profilePage','allPostsPage','poetsPage','adminPage','postPage','groupsPage','groupPage','messagesPage'].forEach(id => {
                 const el = document.getElementById(id);
                 if (el) el.style.display = 'none';
             });
@@ -2529,6 +2577,20 @@
             hideAllPages();
             document.getElementById('allPostsPage').style.display = 'block';
             loadAllPostsPage();
+        };
+
+        window.showGroups = function() {
+            hideAllPages();
+            document.getElementById('groupsPage').style.display = 'block';
+            const btn = document.getElementById('createGroupBtn');
+            if (btn) btn.style.display = window.currentUser ? 'block' : 'none';
+            loadGroupsList();
+        };
+
+        window.showGroupPage = function(groupId) {
+            hideAllPages();
+            document.getElementById('groupPage').style.display = 'block';
+            loadGroupPage(groupId);
         };
 
         window.showMyProfile = function() {
@@ -2644,6 +2706,7 @@
                 📜 Віршів: ${userData.poetryCount || 0} | 
                 💭 Думок: ${userData.thoughtsCount || 0}
             `;
+            loadProfileGroups(window.currentUser.uid);
 
             // Bio - своя сторінка: показуємо кнопку редагування
             const bioText = document.getElementById('profileBioText');
@@ -2689,6 +2752,7 @@
                 📜 Віршів: ${userData.poetryCount || 0} | 
                 💭 Думок: ${userData.thoughtsCount || 0}
             `;
+            loadProfileGroups(userId);
 
             // Bio - чужа сторінка: без кнопки редагування
             const bioText = document.getElementById('profileBioText');
@@ -4210,7 +4274,7 @@
         }
 
         function hideAllPagesInternal() {
-            ['homePage','profilePage','allPostsPage','poetsPage','adminPage','postPage'].forEach(id => {
+            ['homePage','profilePage','allPostsPage','poetsPage','adminPage','postPage','groupsPage','groupPage','messagesPage'].forEach(id => {
                 const el = document.getElementById(id);
                 if (el) el.style.display = 'none';
             });
@@ -5213,6 +5277,352 @@ function downloadImage(blob, filename) {
         const _fontObserver = new MutationObserver(() => applyFontSizeToAll());
         _fontObserver.observe(document.body, { childList: true, subtree: true });
 
+
+        // ============================
+        // ========= GROUPS ===========
+        // ============================
+
+
+        // --- Profile groups ---
+        async function loadProfileGroups(userId) {
+            const section = document.getElementById('profileGroupsSection');
+            const list = document.getElementById('profileGroupsList');
+            if (!section || !list) return;
+            const snap = await get(ref(database, 'groups'));
+            if (!snap.exists()) { section.style.display = 'none'; return; }
+            const myGroups = [];
+            snap.forEach(c => {
+                const g = c.val();
+                if (g.members && g.members[userId]) myGroups.push({ id: c.key, ...g });
+            });
+            if (myGroups.length === 0) { section.style.display = 'none'; return; }
+            section.style.display = 'block';
+            list.innerHTML = myGroups.map(g => `
+                <span onclick="showGroupPage('${g.id}')" style="cursor:pointer; background:var(--bg-secondary); border:1px solid var(--border); border-radius:20px; padding:0.2rem 0.65rem; font-size:0.82rem; color:var(--accent); font-family:'Philosopher',sans-serif; transition:background 0.15s;" onmouseover="this.style.background='var(--accent-light)';this.style.color='white'" onmouseout="this.style.background='var(--bg-secondary)';this.style.color='var(--accent)'">${g.name}</span>
+            `).join('');
+        }
+
+        // --- Home groups preview ---
+        async function loadHomeGroupsPreview() {
+            const container = document.getElementById('homeGroupsPreview');
+            if (!container) return;
+            const snap = await get(ref(database, 'groups'));
+            if (!snap.exists()) { container.innerHTML = '<p style="color:var(--text-lighter); font-size:0.9rem;">Груп ще немає.</p>'; return; }
+            const groups = [];
+            snap.forEach(c => groups.push({ id: c.key, ...c.val() }));
+            groups.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+            const preview = groups.slice(0, 4);
+            container.innerHTML = preview.map(g => {
+                const memberCount = g.members ? Object.keys(g.members).length : 0;
+                return `<div onclick="showGroupPage('${g.id}')" style="display:flex; align-items:center; gap:0.75rem; padding:0.65rem; border-radius:10px; border:1px solid var(--border); cursor:pointer; transition:background 0.15s;" onmouseover="this.style.background='var(--bg-secondary)'" onmouseout="this.style.background=''">
+                    ${g.avatarUrl ? `<img src="${g.avatarUrl}" style="width:40px;height:40px;border-radius:50%;object-fit:cover;flex-shrink:0;">` : `<div style="width:40px;height:40px;border-radius:50%;background:var(--accent-light);color:white;display:flex;align-items:center;justify-content:center;font-size:1.2rem;flex-shrink:0;">🫂</div>`}
+                    <div style="min-width:0;">
+                        <div style="font-weight:700; font-size:0.9rem; color:var(--primary); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${g.name}</div>
+                        <div style="font-size:0.78rem; color:var(--text-lighter);">👥 ${memberCount}</div>
+                    </div>
+                </div>`;
+            }).join('');
+        }
+
+        // --- Load & render groups list ---
+        async function loadGroupsList() {
+            const container = document.getElementById('groupsList');
+            if (!container) return;
+            container.innerHTML = '<div class="loading">Завантаження...</div>';
+            const snap = await get(ref(database, 'groups'));
+            if (!snap.exists()) {
+                container.innerHTML = '<p style="color:var(--text-lighter); text-align:center; padding:2rem; grid-column:1/-1;">Груп ще немає. Будь першим!</p>';
+                return;
+            }
+            const groups = [];
+            snap.forEach(c => groups.push({ id: c.key, ...c.val() }));
+            groups.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+
+            container.innerHTML = groups.map(g => {
+                const memberCount = g.members ? Object.keys(g.members).length : 0;
+                const isMember = window.currentUser && g.members && g.members[window.currentUser.uid];
+                const avatarHtml = g.avatarUrl
+                    ? `<img src="${g.avatarUrl}" style="width:56px;height:56px;border-radius:50%;object-fit:cover;flex-shrink:0;">`
+                    : `<div style="width:56px;height:56px;border-radius:50%;background:var(--accent-light);color:white;display:flex;align-items:center;justify-content:center;font-size:1.5rem;flex-shrink:0;">🫂</div>`;
+                return `<div class="card" style="cursor:pointer; transition:box-shadow 0.2s;" onclick="showGroupPage('${g.id}')" onmouseover="this.style.boxShadow='0 4px 20px rgba(0,0,0,0.12)'" onmouseout="this.style.boxShadow=''">
+                    <div style="display:flex; gap:1rem; align-items:flex-start;">
+                        ${avatarHtml}
+                        <div style="flex:1; min-width:0;">
+                            <div style="font-family:'Philosopher',sans-serif; font-weight:700; font-size:1.1rem; color:var(--primary); margin-bottom:0.25rem;">${g.name}</div>
+                            ${g.description ? `<div style="color:var(--text-light); font-size:0.88rem; margin-bottom:0.5rem; display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">${g.description}</div>` : ''}
+                            <div style="display:flex; align-items:center; gap:0.75rem; flex-wrap:wrap;">
+                                <span style="color:var(--text-lighter); font-size:0.82rem;">👥 ${memberCount} учасників</span>
+                                ${g.tag ? `<span style="color:var(--accent); font-size:0.82rem;">#${g.tag}</span>` : ''}
+                                ${isMember ? `<span style="color:var(--accent); font-size:0.82rem; font-weight:600;">✓ Учасник</span>` : ''}
+                            </div>
+                        </div>
+                    </div>
+                </div>`;
+            }).join('');
+        }
+
+        // --- Load single group page ---
+        async function loadGroupPage(groupId) {
+            window.currentGroupId = groupId;
+            const snap = await get(ref(database, `groups/${groupId}`));
+            if (!snap.exists()) { alert('Групу не знайдено'); showGroups(); return; }
+            const g = { id: groupId, ...snap.val() };
+
+            const avatarEl = document.getElementById('groupPageAvatar');
+            avatarEl.innerHTML = g.avatarUrl
+                ? `<img src="${g.avatarUrl}" style="width:72px;height:72px;border-radius:50%;object-fit:cover;">`
+                : '🫂';
+
+            document.getElementById('groupPageName').textContent = g.name;
+            document.getElementById('groupPageDesc').textContent = g.description || '';
+            const memberCount = g.members ? Object.keys(g.members).length : 0;
+            const postCount = g.posts ? Object.keys(g.posts).length : 0;
+            document.getElementById('groupPageMeta').innerHTML = `👥 ${memberCount} учасників &nbsp;·&nbsp; 📝 ${postCount} публікацій${g.tag ? ` &nbsp;·&nbsp; <span style="color:var(--accent);">#${g.tag}</span>` : ''}`;
+
+            const me = window.currentUser?.uid;
+            const isMember = me && g.members && g.members[me];
+            const isAdmin = me && g.adminId === me;
+            const btns = document.getElementById('groupPageBtns');
+            btns.innerHTML = '';
+
+            if (me) {
+                if (isAdmin) {
+                    btns.innerHTML += `<span style="color:var(--accent); font-weight:700; font-size:0.9rem; align-self:center;">👑 Адмін</span>`;
+                    btns.innerHTML += `<button class="btn btn-primary btn-small" onclick="showGroupPostModal('${groupId}')">📝 Написати</button>`;
+                    btns.innerHTML += `<button class="btn btn-secondary btn-small" onclick="showRepostModal('${groupId}')">🔁 Репост</button>`;
+                    btns.innerHTML += `<button class="btn btn-secondary btn-small" onclick="showInviteModal('${groupId}')">📨 Запросити</button>`;
+                } else if (isMember) {
+                    btns.innerHTML += `<button class="btn btn-primary btn-small" onclick="showGroupPostModal('${groupId}')">📝 Написати</button>`;
+                    btns.innerHTML += `<button class="btn btn-secondary btn-small" onclick="showRepostModal('${groupId}')">🔁 Репост</button>`;
+                    btns.innerHTML += `<button class="btn btn-secondary btn-small" onclick="showInviteModal('${groupId}')">📨 Запросити</button>`;
+                    btns.innerHTML += `<button class="btn btn-secondary btn-small" onclick="leaveGroup('${groupId}')">🚪 Вийти</button>`;
+                } else {
+                    btns.innerHTML += `<button class="btn btn-primary btn-small" onclick="joinGroup('${groupId}')">➕ Вступити</button>`;
+                }
+            }
+
+            // Load posts
+            renderGroupPosts(g);
+        }
+
+        function renderGroupPosts(g) {
+            const container = document.getElementById('groupPagePosts');
+            if (!g.posts) {
+                container.innerHTML = '<div class="card" style="text-align:center; color:var(--text-lighter); padding:2rem;">Ще немає публікацій. Будь першим!</div>';
+                return;
+            }
+            const posts = Object.entries(g.posts).map(([id, p]) => ({ id, ...p }));
+            posts.sort((a, b) => (b.date || 0) - (a.date || 0));
+            const me = window.currentUser?.uid;
+            const isAdmin = me && g.adminId === me;
+
+            container.innerHTML = posts.map(p => {
+                const author = window.allUsers.find(u => u.id === p.authorId);
+                const authorName = author?.name || 'Користувач';
+                const isRepost = !!p.originalPostId;
+                const canDelete = isAdmin || (me && p.authorId === me);
+                const preview = (p.content || '').length > 300 ? p.content.substring(0, 300) + '...' : (p.content || '');
+
+                return `<div class="card" style="margin-bottom:1.25rem;" id="gpost-${p.id}">
+                    ${isRepost ? `<div style="color:var(--accent); font-size:0.82rem; margin-bottom:0.5rem; display:flex; align-items:center; gap:0.4rem;">🔁 Репост від <span onclick="showUserProfile('${p.authorId}')" style="cursor:pointer; text-decoration:underline;">${authorName}</span></div>` : ''}
+                    <span class="post-type-badge">${p.type === 'poetry' ? 'ПОЕЗІЯ' : 'ДУМКА'}</span>
+                    <h3 style="font-family:'Philosopher',sans-serif; font-size:1.4rem; color:var(--primary); margin:0.5rem 0; cursor:pointer;" onclick="showPost('${p.originalPostId || p.id}')">${p.title || 'Без назви'}</h3>
+                    <div style="font-size:0.85rem; color:var(--text-lighter); margin-bottom:0.75rem;">
+                        ✍️ <span onclick="showUserProfile('${p.authorId}')" style="cursor:pointer; color:var(--accent);">${authorName}</span>
+                        &nbsp;·&nbsp; ${new Date(p.date).toLocaleDateString('uk-UA')}
+                    </div>
+                    <div class="post-content" style="white-space:pre-wrap; margin-bottom:0.75rem;">${preview}</div>
+                    ${p.hashtags ? `<div style="color:var(--accent); font-size:0.9rem; margin-bottom:0.5rem;">${p.hashtags}</div>` : ''}
+                    ${canDelete ? `<button class="btn btn-secondary btn-small" onclick="deleteGroupPost('${g.id}', '${p.id}')">🗑️ Видалити</button>` : ''}
+                </div>`;
+            }).join('');
+            applyFontSizeToAll();
+        }
+
+        // --- Join / Leave ---
+        window.joinGroup = async function(groupId) {
+            const me = window.currentUser?.uid;
+            if (!me) { alert('Спочатку увійдіть'); return; }
+            await set(ref(database, `groups/${groupId}/members/${me}`), { joinedAt: Date.now() });
+            loadGroupPage(groupId);
+        };
+
+        window.leaveGroup = async function(groupId) {
+            const me = window.currentUser?.uid;
+            if (!me) return;
+            if (!confirm('Вийти з групи?')) return;
+            await remove(ref(database, `groups/${groupId}/members/${me}`));
+            loadGroupPage(groupId);
+        };
+
+        // --- Create Group ---
+        window.showCreateGroupModal = function() {
+            document.getElementById('createGroupModal').style.display = 'flex';
+        };
+        window.closeCreateGroupModal = function() {
+            document.getElementById('createGroupModal').style.display = 'none';
+        };
+
+        window.handleCreateGroup = async function() {
+            const me = window.currentUser?.uid;
+            if (!me) { alert('Спочатку увійдіть'); return; }
+            const name = document.getElementById('groupNameInput').value.trim();
+            const desc = document.getElementById('groupDescInput').value.trim();
+            const avatar = document.getElementById('groupAvatarInput').value.trim();
+            const tag = document.getElementById('groupTagInput').value.trim().replace('#', '');
+            if (!name) { alert('Введіть назву групи'); return; }
+
+            const newRef = push(ref(database, 'groups'));
+            await set(newRef, {
+                name, description: desc, avatarUrl: avatar, tag,
+                adminId: me,
+                createdAt: Date.now(),
+                members: { [me]: { joinedAt: Date.now() } }
+            });
+            closeCreateGroupModal();
+            document.getElementById('groupNameInput').value = '';
+            document.getElementById('groupDescInput').value = '';
+            document.getElementById('groupAvatarInput').value = '';
+            document.getElementById('groupTagInput').value = '';
+            showGroupPage(newRef.key);
+        };
+
+        // --- Group Post Modal ---
+        window.showGroupPostModal = function(groupId) {
+            document.getElementById('groupPostGroupId').value = groupId;
+            document.getElementById('groupPostModal').style.display = 'flex';
+        };
+        window.closeGroupPostModal = function() {
+            document.getElementById('groupPostModal').style.display = 'none';
+        };
+
+        window.handleSubmitGroupPost = async function() {
+            const me = window.currentUser?.uid;
+            const groupId = document.getElementById('groupPostGroupId').value;
+            const type = document.getElementById('groupPostType').value;
+            const title = document.getElementById('groupPostTitle').value.trim();
+            const content = document.getElementById('groupPostContent').value.trim();
+            const hashtags = document.getElementById('groupPostHashtags').value.trim();
+            if (!title || !content) { alert('Заповніть назву та текст'); return; }
+
+            const newRef = push(ref(database, `groups/${groupId}/posts`));
+            await set(newRef, { type, title, content, hashtags, authorId: me, date: Date.now() });
+            closeGroupPostModal();
+            document.getElementById('groupPostTitle').value = '';
+            document.getElementById('groupPostContent').value = '';
+            document.getElementById('groupPostHashtags').value = '';
+            loadGroupPage(groupId);
+        };
+
+        // --- Delete Group Post ---
+        window.deleteGroupPost = async function(groupId, postId) {
+            if (!confirm('Видалити публікацію з групи?')) return;
+            await remove(ref(database, `groups/${groupId}/posts/${postId}`));
+            loadGroupPage(groupId);
+        };
+
+        // --- Repost Modal ---
+        window.showRepostModal = async function(groupId) {
+            window._repostTargetGroup = groupId;
+            document.getElementById('repostModal').style.display = 'flex';
+            const me = window.currentUser?.uid;
+            const list = document.getElementById('repostGroupList');
+            list.innerHTML = '<p style="color:var(--text-lighter);">Завантаження ваших постів...</p>';
+
+            const snap = await get(ref(database, 'posts'));
+            if (!snap.exists()) { list.innerHTML = '<p style="color:var(--text-lighter);">Немає постів</p>'; return; }
+            const myPosts = [];
+            snap.forEach(c => { const p = c.val(); if (p.userId === me) myPosts.push({ id: c.key, ...p }); });
+            myPosts.sort((a, b) => (b.date || 0) - (a.date || 0));
+
+            if (myPosts.length === 0) { list.innerHTML = '<p style="color:var(--text-lighter);">У вас немає публікацій для репосту</p>'; return; }
+
+            list.innerHTML = myPosts.map(p => `
+                <div onclick="doRepost('${p.id}')" style="padding:0.65rem 0.75rem; border-radius:8px; cursor:pointer; border:1px solid var(--border); transition:background 0.15s;" onmouseover="this.style.background='var(--bg-secondary)'" onmouseout="this.style.background=''">
+                    <div style="font-weight:700; font-size:0.9rem; color:var(--primary); margin-bottom:0.2rem;">${p.title || 'Без назви'}</div>
+                    <div style="font-size:0.78rem; color:var(--text-lighter);">${p.type === 'poetry' ? '📜 Поезія' : '💭 Думка'} · ${new Date(p.date).toLocaleDateString('uk-UA')}</div>
+                </div>
+            `).join('');
+        };
+
+        window.closeRepostModal = function() {
+            document.getElementById('repostModal').style.display = 'none';
+        };
+
+        window.doRepost = async function(postId) {
+            const me = window.currentUser?.uid;
+            const groupId = window._repostTargetGroup;
+            const snap = await get(ref(database, `posts/${postId}`));
+            if (!snap.exists()) return;
+            const post = snap.val();
+
+            const newRef = push(ref(database, `groups/${groupId}/posts`));
+            await set(newRef, {
+                type: post.type,
+                title: post.title,
+                content: post.content,
+                hashtags: post.hashtags || '',
+                authorId: me,
+                originalPostId: postId,
+                date: Date.now()
+            });
+            closeRepostModal();
+            loadGroupPage(groupId);
+        };
+
+        // ---- INVITE MODAL ----
+        let _inviteGroupId = null;
+        let _inviteAllUsers = [];
+
+        window.showInviteModal = async function(groupId) {
+            _inviteGroupId = groupId;
+            document.getElementById('inviteModal').style.display = 'flex';
+            document.getElementById('inviteSearchInput').value = '';
+            const list = document.getElementById('inviteUserList');
+            list.innerHTML = '<p style="color:var(--text-lighter); text-align:center;">Завантаження...</p>';
+
+            const snap = await get(ref(database, `groups/${groupId}/members`));
+            const members = snap.exists() ? Object.keys(snap.val()) : [];
+            const me = window.currentUser?.uid;
+
+            _inviteAllUsers = (window.allUsers || []).filter(u => u.id !== me && !members.includes(u.id));
+            renderInviteList(_inviteAllUsers);
+        };
+
+        window.closeInviteModal = function() {
+            document.getElementById('inviteModal').style.display = 'none';
+        };
+
+        window.filterInviteList = function(q) {
+            const filtered = _inviteAllUsers.filter(u => (u.name || '').toLowerCase().includes(q.toLowerCase()));
+            renderInviteList(filtered);
+        };
+
+        function renderInviteList(users) {
+            const list = document.getElementById('inviteUserList');
+            if (users.length === 0) {
+                list.innerHTML = '<p style="color:var(--text-lighter); text-align:center; padding:1rem;">Нікого не знайдено</p>';
+                return;
+            }
+            list.innerHTML = users.map(u => `
+                <div style="display:flex; align-items:center; gap:0.75rem; padding:0.55rem 0.5rem; border-radius:8px; border:1px solid var(--border);">
+                    ${u.avatarUrl
+                        ? `<img src="${u.avatarUrl}" style="width:36px;height:36px;border-radius:50%;object-fit:cover;flex-shrink:0;">`
+                        : `<div style="width:36px;height:36px;border-radius:50%;background:var(--accent-light);color:white;display:flex;align-items:center;justify-content:center;font-weight:700;flex-shrink:0;">${(u.name||'?').charAt(0).toUpperCase()}</div>`
+                    }
+                    <div style="flex:1; font-weight:600; font-size:0.9rem; color:var(--primary);">${u.name || 'Користувач'}</div>
+                    <button class="btn btn-primary btn-small" id="invite-btn-${u.id}" onclick="doInviteUser('${u.id}')">Запросити</button>
+                </div>
+            `).join('');
+        }
+
+        window.doInviteUser = async function(userId) {
+            const btn = document.getElementById(`invite-btn-${userId}`);
+            if (btn) { btn.disabled = true; btn.textContent = '✓ Додано'; }
+            await set(ref(database, `groups/${_inviteGroupId}/members/${userId}`), { joinedAt: Date.now(), invitedBy: window.currentUser?.uid });
+            _inviteAllUsers = _inviteAllUsers.filter(u => u.id !== userId);
+        };
+
         // ---- FRIENDS MODAL ----
         window.showFriendsModal = async function() {
             const me = window.currentUser?.uid;
@@ -5284,6 +5694,96 @@ function downloadImage(blob, filename) {
         document.addEventListener('DOMContentLoaded', () => initFontSizeSlider());
 
 </script>
+
+    <!-- Create Group Modal -->
+    <div id="createGroupModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.55); z-index:1100; align-items:center; justify-content:center;">
+        <div style="background:var(--bg-card); border-radius:14px; width:100%; max-width:500px; max-height:90vh; overflow-y:auto; margin:1rem; box-shadow:0 12px 40px rgba(0,0,0,0.25);">
+            <div style="display:flex; align-items:center; justify-content:space-between; padding:1rem 1.25rem; border-bottom:1px solid var(--border); background:var(--accent); color:white; border-radius:14px 14px 0 0;">
+                <span style="font-family:'Philosopher',sans-serif; font-weight:700; font-size:1.05rem;">➕ Створити групу</span>
+                <button onclick="closeCreateGroupModal()" style="background:none;border:none;font-size:1.3rem;cursor:pointer;color:white;opacity:0.85;">✕</button>
+            </div>
+            <div style="padding:1.25rem;">
+                <div class="form-group">
+                    <label class="form-label">Назва групи *</label>
+                    <input type="text" class="form-input" id="groupNameInput" placeholder="Наприклад: Любителі хайку">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Опис</label>
+                    <textarea class="form-input" id="groupDescInput" rows="3" placeholder="Про що ця група..."></textarea>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Аватар (посилання на зображення)</label>
+                    <input type="url" class="form-input" id="groupAvatarInput" placeholder="https://example.com/image.jpg">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Хештег групи (без #)</label>
+                    <input type="text" class="form-input" id="groupTagInput" placeholder="хайку">
+                </div>
+                <button class="btn btn-primary" style="width:100%; margin-top:0.5rem;" onclick="handleCreateGroup()">Створити</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Repost to Group Modal -->
+    <div id="repostModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.55); z-index:1100; align-items:center; justify-content:center;">
+        <div style="background:var(--bg-card); border-radius:14px; width:100%; max-width:440px; margin:1rem; box-shadow:0 12px 40px rgba(0,0,0,0.25); overflow:hidden;">
+            <div style="display:flex; align-items:center; justify-content:space-between; padding:1rem 1.25rem; border-bottom:1px solid var(--border); background:var(--accent); color:white;">
+                <span style="font-family:'Philosopher',sans-serif; font-weight:700; font-size:1.05rem;">🔁 Репост у групу</span>
+                <button onclick="closeRepostModal()" style="background:none;border:none;font-size:1.3rem;cursor:pointer;color:white;opacity:0.85;">✕</button>
+            </div>
+            <div style="padding:1.25rem;">
+                <p style="color:var(--text-light); margin-bottom:1rem; font-size:0.95rem;">Оберіть групу для репосту:</p>
+                <div id="repostGroupList" style="display:flex; flex-direction:column; gap:0.5rem; max-height:300px; overflow-y:auto;"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Group Post Modal -->
+    <div id="groupPostModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.55); z-index:1100; align-items:center; justify-content:center;">
+        <div style="background:var(--bg-card); border-radius:14px; width:100%; max-width:560px; max-height:90vh; overflow-y:auto; margin:1rem; box-shadow:0 12px 40px rgba(0,0,0,0.25);">
+            <div style="display:flex; align-items:center; justify-content:space-between; padding:1rem 1.25rem; border-bottom:1px solid var(--border); background:var(--accent); color:white; border-radius:14px 14px 0 0;">
+                <span id="groupPostModalTitle" style="font-family:'Philosopher',sans-serif; font-weight:700; font-size:1.05rem;">📝 Публікація в групу</span>
+                <button onclick="closeGroupPostModal()" style="background:none;border:none;font-size:1.3rem;cursor:pointer;color:white;opacity:0.85;">✕</button>
+            </div>
+            <div style="padding:1.25rem;">
+                <div class="form-group">
+                    <label class="form-label">Тип</label>
+                    <select class="form-input" id="groupPostType">
+                        <option value="poetry">Поезія</option>
+                        <option value="thought">Думка</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Назва</label>
+                    <input type="text" class="form-input" id="groupPostTitle">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Текст</label>
+                    <textarea class="form-input" id="groupPostContent" rows="8"></textarea>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Хештеги</label>
+                    <input type="text" class="form-input" id="groupPostHashtags">
+                </div>
+                <input type="hidden" id="groupPostGroupId">
+                <button class="btn btn-primary" style="width:100%; margin-top:0.5rem;" onclick="handleSubmitGroupPost()">Опублікувати</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Invite to Group Modal -->
+    <div id="inviteModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.55); z-index:1100; align-items:center; justify-content:center;">
+        <div style="background:var(--bg-card); border-radius:14px; width:100%; max-width:460px; max-height:80vh; display:flex; flex-direction:column; margin:1rem; box-shadow:0 12px 40px rgba(0,0,0,0.25); overflow:hidden;">
+            <div style="display:flex; align-items:center; justify-content:space-between; padding:1rem 1.25rem; border-bottom:1px solid var(--border); background:var(--accent); color:white;">
+                <span style="font-family:'Philosopher',sans-serif; font-weight:700; font-size:1.05rem;">📨 Запросити у групу</span>
+                <button onclick="closeInviteModal()" style="background:none;border:none;font-size:1.3rem;cursor:pointer;color:white;opacity:0.85;">✕</button>
+            </div>
+            <div style="padding:0.75rem 1rem 0.25rem;">
+                <input type="text" id="inviteSearchInput" class="form-input" placeholder="Пошук за іменем..." oninput="filterInviteList(this.value)" style="margin-bottom:0.5rem;">
+            </div>
+            <div id="inviteUserList" style="overflow-y:auto; padding:0.25rem 1rem 1rem; flex:1; display:flex; flex-direction:column; gap:0.4rem;"></div>
+        </div>
+    </div>
 
     <!-- Friends Modal -->
     <div id="friendsModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.55); z-index:1100; align-items:center; justify-content:center;">
