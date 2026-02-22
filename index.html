@@ -6,7 +6,7 @@
     <link rel="icon" type="image/webp" href="logo.webp">
     <link rel="shortcut icon" type="image/webp" href="logo.webp">
     <link rel="apple-touch-icon" href="logo.webp">
-    <title>...Спільнота поетів</title>
+    <title>Спільнота поетів</title>
 
     <!-- GitHub Pages SPA: відновлюємо URL після редиректу через 404.html -->
     <script>
@@ -5533,8 +5533,15 @@ function downloadImage(blob, filename) {
         window._repostPosts = [];
 
         window.repostPickPost = function(idx) {
+            console.log('repostPickPost called, idx:', idx, 'posts:', window._repostPosts);
             const post = window._repostPosts[idx];
-            if (post) window.doRepost(post.id);
+            console.log('post:', post);
+            if (post) {
+                console.log('calling doRepost with id:', post.id);
+                window.doRepost(post.id);
+            } else {
+                alert('Помилка: пост не знайдено (idx=' + idx + ', всього=' + window._repostPosts.length + ')');
+            }
         };
 
         window.showRepostModal = async function(groupId) {
@@ -5567,8 +5574,10 @@ function downloadImage(blob, filename) {
         };
 
         window.doRepost = async function(postId) {
+            console.log('doRepost called, postId:', postId);
             const me = window.currentUser?.uid;
             const groupId = window._repostTargetGroup;
+            console.log('me:', me, 'groupId:', groupId);
             const snap = await get(ref(database, `posts/${postId}`));
             if (!snap.exists()) return;
             const post = snap.val();
