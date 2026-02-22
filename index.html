@@ -369,7 +369,7 @@
 
         /* Admin Tabs */
         .admin-tab-btn {
-            padding: 0.75rem 1.5rem;
+            padding: 0.65rem 1rem;
             background: transparent;
             border: none;
             border-bottom: 3px solid transparent;
@@ -1541,7 +1541,7 @@
             .thoughts-scroll-row .random-card { flex: 0 0 88vw !important; max-width: 88vw !important; width: 88vw !important; }
             #adminStatsGrid { grid-template-columns: 1fr; }
             .search-options-row { flex-direction: column; gap: 0.5rem; }
-            .admin-tab-btn { padding: 0.5rem 0.75rem; font-size: 0.85rem; }
+            .admin-tab-btn { padding: 0.45rem 0.6rem; font-size: 0.78rem; }
             .home-section-card .card-title { font-size: 1rem; }
         }
 
@@ -2058,7 +2058,7 @@
             <h2 class="card-title">⚙️ Адмін панель</h2>
             
             <!-- Admin Tabs -->
-            <div style="display: flex; gap: 1rem; margin-bottom: 2rem; border-bottom: 2px solid var(--border);">
+            <div style="display: flex; flex-wrap: wrap; gap: 0.25rem; margin-bottom: 2rem; border-bottom: 2px solid var(--border); overflow-x: auto;">
                 <button class="admin-tab-btn active" onclick="showAdminTab('stats')">📊 Статистика</button>
                 <button class="admin-tab-btn" onclick="showAdminTab('posts')">📝 Публікації</button>
                 <button class="admin-tab-btn" onclick="showAdminTab('users')">👥 Користувачі</button>
