@@ -2601,6 +2601,7 @@
             document.getElementById('groupsPage').style.display = 'block';
             const btn = document.getElementById('createGroupBtn');
             if (btn) btn.style.display = window.currentUser ? 'block' : 'none';
+            if (typeof updateMeta === 'function') updateMeta({ title: 'Групи за інтересами', description: 'Поетичні групи спільноти PoetsSociety', url: '/groups' });
             loadGroupsList();
         };
 
@@ -2790,8 +2791,8 @@
 
             // SEO
             updateMeta({
-                title: userData.name || 'Профіль автора',
-                description: userData.bio ? userData.bio.substring(0, 160) : `Профіль автора ${userData.name || ''} на платформі KonVi`,
+                title: `Персональна сторінка ${userData.name || 'автора'}`,
+                description: userData.bio ? userData.bio.substring(0, 160) : `Персональна сторінка автора ${userData.name || ''} на платформі PoetsSociety`,
                 url: '/profile/' + userId,
                 image: userData.avatarUrl || undefined
             });
@@ -4269,7 +4270,7 @@
         // Оновлення мета-тегів для SEO
         function updateMeta({ title, description, url, image } = {}) {
             const base = 'https://poetssociety.pages.dev';
-            const fullTitle = title ? title + ' — KonVi' : 'Поетична платформа - Спільнота поетів';
+            const fullTitle = title ? title + ' — PoetsSociety' : 'Спільнота Поетів PoetsSociety';
             const fullUrl = url ? base + url : base + window.location.pathname;
             const fullDesc = description || 'Спільнота українських поетів. Читайте вірші та думки авторів.';
             const fullImg = image || base + '/logo.webp';
@@ -4306,7 +4307,7 @@
             hideHeaderFilter();
             document.getElementById('homePage').style.display = 'grid';
             setHomeSearchVisible(true);
-            updateMeta({ url: '/' });
+            updateMeta({ title: 'Спільнота Поетів PoetsSociety', url: '/' });
         }
 
         function navigateToPoets() {
@@ -4324,7 +4325,7 @@
             setHomeSearchVisible(false);
             loadAllPostsPage();
             showHeaderFilter('allPosts');
-            updateMeta({ title: 'Всі публікації', description: 'Всі вірші та думки спільноти KonVi', url: '/posts' });
+            updateMeta({ title: 'Всі публікації поетичної спільноти', description: 'Всі вірші та думки спільноти PoetsSociety', url: '/posts' });
         }
 
         function navigateToMyProfile() {
@@ -4339,7 +4340,7 @@
             setHomeSearchVisible(false);
             loadMyProfile();
             showHeaderFilter('profile');
-            updateMeta({ title: 'Мій профіль', url: '/profile' });
+            updateMeta({ title: 'Мій профіль — PoetsSociety', url: '/profile' });
         }
 
         function navigateToUserProfile(userId) {
@@ -5499,6 +5500,7 @@ function downloadImage(blob, filename) {
                 : '🫂';
 
             document.getElementById('groupPageName').textContent = g.name;
+            if (typeof updateMeta === 'function') updateMeta({ title: `Поетична група ${g.name}`, description: g.description || `Поетична група ${g.name} на PoetsSociety`, url: '/group/' + groupId });
             document.getElementById('groupPageDesc').textContent = g.description || '';
             const memberCount = g.members ? Object.keys(g.members).length : 0;
             const postCount = g.posts ? Object.keys(g.posts).length : 0;
