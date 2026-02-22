@@ -6,7 +6,7 @@
     <link rel="icon" type="image/webp" href="logo.webp">
     <link rel="shortcut icon" type="image/webp" href="logo.webp">
     <link rel="apple-touch-icon" href="logo.webp">
-    <title>Спільнота поетів</title>
+    <title>...Спільнота поетів</title>
 
     <!-- GitHub Pages SPA: відновлюємо URL після редиректу через 404.html -->
     <script>
@@ -5295,13 +5295,12 @@ function downloadImage(blob, filename) {
             const section = document.getElementById('profileGroupsSection');
             const list = document.getElementById('profileGroupsList');
             if (!section || !list) return;
-            const snap = await get(ref(database, 'groups'));
-            if (!snap.exists()) { section.style.display = 'none'; return; }
-            const myGroups = [];
-            snap.forEach(c => {
-                const g = c.val();
-                if (g.members && g.members[userId]) myGroups.push({ id: c.key, ...g });
-            });
+            const _r3 = await fetch(`https://poetry-blog-ff72f-default-rtdb.europe-west1.firebasedatabase.app/groups.json`);
+            const _d3 = await _r3.json();
+            if (!_d3) { section.style.display = 'none'; return; }
+            const myGroups = Object.entries(_d3)
+                .map(([id, g]) => ({ id, ...g }))
+                .filter(g => g.members && g.members[userId]);
             if (myGroups.length === 0) { section.style.display = 'none'; return; }
             section.style.display = 'block';
             list.innerHTML = myGroups.map(g => `
@@ -5313,10 +5312,10 @@ function downloadImage(blob, filename) {
         async function loadHomeGroupsPreview() {
             const container = document.getElementById('homeGroupsPreview');
             if (!container) return;
-            const snap = await get(ref(database, 'groups'));
-            if (!snap.exists()) { container.innerHTML = '<p style="color:var(--text-lighter); font-size:0.9rem;">Груп ще немає.</p>'; return; }
-            const groups = [];
-            snap.forEach(c => groups.push({ id: c.key, ...c.val() }));
+            const _r2 = await fetch(`https://poetry-blog-ff72f-default-rtdb.europe-west1.firebasedatabase.app/groups.json`);
+            const _d2 = await _r2.json();
+            if (!_d2) { container.innerHTML = '<p style="color:var(--text-lighter); font-size:0.9rem;">Груп ще немає.</p>'; return; }
+            const groups = Object.entries(_d2).map(([id, v]) => ({ id, ...v }));
             groups.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
             const preview = groups.slice(0, 4);
             container.innerHTML = preview.map(g => {
@@ -5336,13 +5335,13 @@ function downloadImage(blob, filename) {
             const container = document.getElementById('groupsList');
             if (!container) return;
             container.innerHTML = '<div class="loading">Завантаження...</div>';
-            const snap = await get(ref(database, 'groups'));
-            if (!snap.exists()) {
+            const _r1 = await fetch(`https://poetry-blog-ff72f-default-rtdb.europe-west1.firebasedatabase.app/groups.json`);
+            const _d1 = await _r1.json();
+            if (!_d1) {
                 container.innerHTML = '<p style="color:var(--text-lighter); text-align:center; padding:2rem; grid-column:1/-1;">Груп ще немає. Будь першим!</p>';
                 return;
             }
-            const groups = [];
-            snap.forEach(c => groups.push({ id: c.key, ...c.val() }));
+            const groups = Object.entries(_d1).map(([id, v]) => ({ id, ...v }));
             groups.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
 
             container.innerHTML = groups.map(g => {
@@ -5371,9 +5370,11 @@ function downloadImage(blob, filename) {
         // --- Load single group page ---
         async function loadGroupPage(groupId) {
             window.currentGroupId = groupId;
-            const snap = await get(ref(database, `groups/${groupId}`));
-            if (!snap.exists()) { alert('Групу не знайдено'); showGroups(); return; }
-            const g = { id: groupId, ...snap.val() };
+            const _tok4 = window.currentUser ? await window.currentUser.getIdToken() : '';
+            const _r4 = await fetch(`https://poetry-blog-ff72f-default-rtdb.europe-west1.firebasedatabase.app/groups/${groupId}.json?auth=${_tok4}`);
+            const _d4 = await _r4.json();
+            if (!_d4) { alert('Групу не знайдено'); showGroups(); return; }
+            const g = { id: groupId, ..._d4 };
 
             const avatarEl = document.getElementById('groupPageAvatar');
             avatarEl.innerHTML = g.avatarUrl
@@ -5450,7 +5451,11 @@ function downloadImage(blob, filename) {
         window.joinGroup = async function(groupId) {
             const me = window.currentUser?.uid;
             if (!me) { alert('Спочатку увійдіть'); return; }
-            await set(ref(database, `groups/${groupId}/members/${me}`), { joinedAt: Date.now() });
+            const _tok5 = await window.currentUser.getIdToken();
+            await fetch(`https://poetry-blog-ff72f-default-rtdb.europe-west1.firebasedatabase.app/groups/${groupId}/members/${me}.json?auth=${_tok5}`, {
+                method: 'PUT', headers: {'Content-Type':'application/json'},
+                body: JSON.stringify({ joinedAt: Date.now() })
+            });
             loadGroupPage(groupId);
         };
 
@@ -5458,7 +5463,8 @@ function downloadImage(blob, filename) {
             const me = window.currentUser?.uid;
             if (!me) return;
             if (!confirm('Вийти з групи?')) return;
-            await remove(ref(database, `groups/${groupId}/members/${me}`));
+            const _tok6 = await window.currentUser.getIdToken();
+            await fetch(`https://poetry-blog-ff72f-default-rtdb.europe-west1.firebasedatabase.app/groups/${groupId}/members/${me}.json?auth=${_tok6}`, { method: 'DELETE' });
             loadGroupPage(groupId);
         };
 
@@ -5479,19 +5485,20 @@ function downloadImage(blob, filename) {
             const tag = document.getElementById('groupTagInput').value.trim().replace('#', '');
             if (!name) { alert('Введіть назву групи'); return; }
 
-            const newRef = push(ref(database, 'groups'));
-            await set(newRef, {
-                name, description: desc, avatarUrl: avatar, tag,
-                adminId: me,
-                createdAt: Date.now(),
-                members: { [me]: { joinedAt: Date.now() } }
+            const _tok7 = await window.currentUser.getIdToken();
+            const _newId = 'g' + Date.now();
+            await fetch(`https://poetry-blog-ff72f-default-rtdb.europe-west1.firebasedatabase.app/groups/${_newId}.json?auth=${_tok7}`, {
+                method: 'PUT', headers: {'Content-Type':'application/json'},
+                body: JSON.stringify({ name, description: desc, avatarUrl: avatar, tag,
+                    adminId: me, createdAt: Date.now(),
+                    members: { [me]: { joinedAt: Date.now() } } })
             });
             closeCreateGroupModal();
             document.getElementById('groupNameInput').value = '';
             document.getElementById('groupDescInput').value = '';
             document.getElementById('groupAvatarInput').value = '';
             document.getElementById('groupTagInput').value = '';
-            showGroupPage(newRef.key);
+            showGroupPage(_newId);
         };
 
         // --- Group Post Modal ---
@@ -5512,8 +5519,12 @@ function downloadImage(blob, filename) {
             const hashtags = document.getElementById('groupPostHashtags').value.trim();
             if (!title || !content) { alert('Заповніть назву та текст'); return; }
 
-            const newRef = push(ref(database, `groups/${groupId}/posts`));
-            await set(newRef, { type, title, content, hashtags, authorId: me, date: Date.now() });
+            const _tok8 = await window.currentUser.getIdToken();
+            const _pid8 = 'p' + Date.now();
+            await fetch(`https://poetry-blog-ff72f-default-rtdb.europe-west1.firebasedatabase.app/groups/${groupId}/posts/${_pid8}.json?auth=${_tok8}`, {
+                method: 'PUT', headers: {'Content-Type':'application/json'},
+                body: JSON.stringify({ type, title, content, hashtags, authorId: me, date: Date.now() })
+            });
             closeGroupPostModal();
             document.getElementById('groupPostTitle').value = '';
             document.getElementById('groupPostContent').value = '';
@@ -5524,7 +5535,8 @@ function downloadImage(blob, filename) {
         // --- Delete Group Post ---
         window.deleteGroupPost = async function(groupId, postId) {
             if (!confirm('Видалити публікацію з групи?')) return;
-            await remove(ref(database, `groups/${groupId}/posts/${postId}`));
+            const _tok9 = await window.currentUser.getIdToken();
+            await fetch(`https://poetry-blog-ff72f-default-rtdb.europe-west1.firebasedatabase.app/groups/${groupId}/posts/${postId}.json?auth=${_tok9}`, { method: 'DELETE' });
             loadGroupPage(groupId);
         };
 
@@ -5533,15 +5545,8 @@ function downloadImage(blob, filename) {
         window._repostPosts = [];
 
         window.repostPickPost = function(idx) {
-            console.log('repostPickPost called, idx:', idx, 'posts:', window._repostPosts);
             const post = window._repostPosts[idx];
-            console.log('post:', post);
-            if (post) {
-                console.log('calling doRepost with id:', post.id);
-                window.doRepost(post.id);
-            } else {
-                alert('Помилка: пост не знайдено (idx=' + idx + ', всього=' + window._repostPosts.length + ')');
-            }
+            if (post) window.doRepost(post.id);
         };
 
         window.showRepostModal = async function(groupId) {
@@ -5551,10 +5556,13 @@ function downloadImage(blob, filename) {
             const list = document.getElementById('repostGroupList');
             list.innerHTML = '<p style="color:var(--text-lighter);">Завантаження ваших постів...</p>';
 
-            const snap = await get(ref(database, 'posts'));
-            if (!snap.exists()) { list.innerHTML = '<p style="color:var(--text-lighter);">Немає постів</p>'; return; }
-            const myPosts = [];
-            snap.forEach(c => { const p = c.val(); if (p.userId === me) myPosts.push({ id: c.key, ...p }); });
+            const _tok10 = await window.currentUser.getIdToken();
+            const _r10 = await fetch(`https://poetry-blog-ff72f-default-rtdb.europe-west1.firebasedatabase.app/posts.json?auth=${_tok10}`);
+            const _d10 = await _r10.json();
+            if (!_d10) { list.innerHTML = '<p style="color:var(--text-lighter);">Немає постів</p>'; return; }
+            const myPosts = Object.entries(_d10)
+                .map(([id, p]) => ({ id, ...p }))
+                .filter(p => p.userId === me);
             myPosts.sort((a, b) => (b.date || 0) - (a.date || 0));
 
             if (myPosts.length === 0) { list.innerHTML = '<p style="color:var(--text-lighter);">У вас немає публікацій для репосту</p>'; return; }
@@ -5574,23 +5582,29 @@ function downloadImage(blob, filename) {
         };
 
         window.doRepost = async function(postId) {
-            console.log('doRepost called, postId:', postId);
             const me = window.currentUser?.uid;
             const groupId = window._repostTargetGroup;
-            console.log('me:', me, 'groupId:', groupId);
-            const snap = await get(ref(database, `posts/${postId}`));
-            if (!snap.exists()) return;
-            const post = snap.val();
 
-            const newRef = push(ref(database, `groups/${groupId}/posts`));
-            await set(newRef, {
-                type: post.type,
-                title: post.title,
-                content: post.content,
-                hashtags: post.hashtags || '',
-                authorId: me,
-                originalPostId: postId,
-                date: Date.now()
+            // Читаємо пост через REST API (SDK заблокований)
+            const token = await window.currentUser.getIdToken();
+            const postResp = await fetch(`https://poetry-blog-ff72f-default-rtdb.europe-west1.firebasedatabase.app/posts/${postId}.json?auth=${token}`);
+            const post = await postResp.json();
+            if (!post) { alert('Пост не знайдено'); return; }
+
+            // Записуємо репост через REST API
+            const newPostId = Date.now().toString();
+            await fetch(`https://poetry-blog-ff72f-default-rtdb.europe-west1.firebasedatabase.app/groups/${groupId}/posts/${newPostId}.json?auth=${token}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    type: post.type,
+                    title: post.title,
+                    content: post.content,
+                    hashtags: post.hashtags || '',
+                    authorId: me,
+                    originalPostId: postId,
+                    date: Date.now()
+                })
             });
             closeRepostModal();
             loadGroupPage(groupId);
@@ -5607,8 +5621,10 @@ function downloadImage(blob, filename) {
             const list = document.getElementById('inviteUserList');
             list.innerHTML = '<p style="color:var(--text-lighter); text-align:center;">Завантаження...</p>';
 
-            const snap = await get(ref(database, `groups/${groupId}/members`));
-            const members = snap.exists() ? Object.keys(snap.val()) : [];
+            const _tok11 = window.currentUser ? await window.currentUser.getIdToken() : '';
+            const _r11 = await fetch(`https://poetry-blog-ff72f-default-rtdb.europe-west1.firebasedatabase.app/groups/${groupId}/members.json?auth=${_tok11}`);
+            const _d11 = await _r11.json();
+            const members = _d11 ? Object.keys(_d11) : [];
             const me = window.currentUser?.uid;
 
             _inviteAllUsers = (window.allUsers || []).filter(u => u.id !== me && !members.includes(u.id));
@@ -5645,7 +5661,11 @@ function downloadImage(blob, filename) {
         window.doInviteUser = async function(userId) {
             const btn = document.getElementById(`invite-btn-${userId}`);
             if (btn) { btn.disabled = true; btn.textContent = '✓ Додано'; }
-            await set(ref(database, `groups/${_inviteGroupId}/members/${userId}`), { joinedAt: Date.now(), invitedBy: window.currentUser?.uid });
+            const _tok12 = await window.currentUser.getIdToken();
+            await fetch(`https://poetry-blog-ff72f-default-rtdb.europe-west1.firebasedatabase.app/groups/${_inviteGroupId}/members/${userId}.json?auth=${_tok12}`, {
+                method: 'PUT', headers: {'Content-Type':'application/json'},
+                body: JSON.stringify({ joinedAt: Date.now(), invitedBy: window.currentUser?.uid })
+            });
             _inviteAllUsers = _inviteAllUsers.filter(u => u.id !== userId);
         };
 
