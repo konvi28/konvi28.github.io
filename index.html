@@ -6,7 +6,7 @@
     <link rel="icon" type="image/webp" href="logo.webp">
     <link rel="shortcut icon" type="image/webp" href="logo.webp">
     <link rel="apple-touch-icon" href="logo.webp">
-    <title>..Спільнота поетів</title>
+    <title>...Спільнота поетів</title>
 
     <!-- GitHub Pages SPA: відновлюємо URL після редиректу через 404.html -->
     <script>
@@ -5553,13 +5553,10 @@ function downloadImage(blob, filename) {
                     <div style="font-size:0.78rem; color:var(--text-lighter); pointer-events:none;">${p.type === 'poetry' ? '📜 Поезія' : '💭 Думка'} · ${new Date(p.date).toLocaleDateString('uk-UA')}</div>
                 </button>
             `).join('');
-            list.addEventListener('click', function handler(e) {
+            list.onclick = function(e) {
                 const btn = e.target.closest('button[data-pid]');
-                if (btn) {
-                    list.removeEventListener('click', handler);
-                    doRepost(btn.dataset.pid);
-                }
-            });
+                if (btn) doRepost(btn.dataset.pid);
+            };
         };
 
         window.closeRepostModal = function() {
@@ -5721,8 +5718,8 @@ function downloadImage(blob, filename) {
 </script>
 
     <!-- Create Group Modal -->
-    <div id="createGroupModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.55); z-index:1100; align-items:center; justify-content:center;">
-        <div style="background:var(--bg-card); border-radius:14px; width:100%; max-width:500px; max-height:90vh; overflow-y:auto; margin:1rem; box-shadow:0 12px 40px rgba(0,0,0,0.25);">
+    <div id="createGroupModal" onclick="closeCreateGroupModal()" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.55); z-index:1100; align-items:center; justify-content:center;">
+        <div onclick="event.stopPropagation()" style="background:var(--bg-card); border-radius:14px; width:100%; max-width:500px; max-height:90vh; overflow-y:auto; margin:1rem; box-shadow:0 12px 40px rgba(0,0,0,0.25);">
             <div style="display:flex; align-items:center; justify-content:space-between; padding:1rem 1.25rem; border-bottom:1px solid var(--border); background:var(--accent); color:white; border-radius:14px 14px 0 0;">
                 <span style="font-family:'Philosopher',sans-serif; font-weight:700; font-size:1.05rem;">➕ Створити групу</span>
                 <button onclick="closeCreateGroupModal()" style="background:none;border:none;font-size:1.3rem;cursor:pointer;color:white;opacity:0.85;">✕</button>
@@ -5750,8 +5747,8 @@ function downloadImage(blob, filename) {
     </div>
 
     <!-- Repost to Group Modal -->
-    <div id="repostModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.55); z-index:1100; align-items:center; justify-content:center;">
-        <div style="background:var(--bg-card); border-radius:14px; width:100%; max-width:440px; margin:1rem; box-shadow:0 12px 40px rgba(0,0,0,0.25); overflow:hidden;">
+    <div id="repostModal" onclick="closeRepostModal()" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.55); z-index:1100; align-items:center; justify-content:center;">
+        <div onclick="event.stopPropagation()" style="background:var(--bg-card); border-radius:14px; width:100%; max-width:440px; margin:1rem; box-shadow:0 12px 40px rgba(0,0,0,0.25); overflow:hidden;">
             <div style="display:flex; align-items:center; justify-content:space-between; padding:1rem 1.25rem; border-bottom:1px solid var(--border); background:var(--accent); color:white;">
                 <span style="font-family:'Philosopher',sans-serif; font-weight:700; font-size:1.05rem;">🔁 Репост у групу</span>
                 <button onclick="closeRepostModal()" style="background:none;border:none;font-size:1.3rem;cursor:pointer;color:white;opacity:0.85;">✕</button>
@@ -5764,8 +5761,8 @@ function downloadImage(blob, filename) {
     </div>
 
     <!-- Group Post Modal -->
-    <div id="groupPostModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.55); z-index:1100; align-items:center; justify-content:center;">
-        <div style="background:var(--bg-card); border-radius:14px; width:100%; max-width:560px; max-height:90vh; overflow-y:auto; margin:1rem; box-shadow:0 12px 40px rgba(0,0,0,0.25);">
+    <div id="groupPostModal" onclick="closeGroupPostModal()" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.55); z-index:1100; align-items:center; justify-content:center;">
+        <div onclick="event.stopPropagation()" style="background:var(--bg-card); border-radius:14px; width:100%; max-width:560px; max-height:90vh; overflow-y:auto; margin:1rem; box-shadow:0 12px 40px rgba(0,0,0,0.25);">
             <div style="display:flex; align-items:center; justify-content:space-between; padding:1rem 1.25rem; border-bottom:1px solid var(--border); background:var(--accent); color:white; border-radius:14px 14px 0 0;">
                 <span id="groupPostModalTitle" style="font-family:'Philosopher',sans-serif; font-weight:700; font-size:1.05rem;">📝 Публікація в групу</span>
                 <button onclick="closeGroupPostModal()" style="background:none;border:none;font-size:1.3rem;cursor:pointer;color:white;opacity:0.85;">✕</button>
@@ -5797,8 +5794,8 @@ function downloadImage(blob, filename) {
     </div>
 
     <!-- Invite to Group Modal -->
-    <div id="inviteModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.55); z-index:1100; align-items:center; justify-content:center;">
-        <div style="background:var(--bg-card); border-radius:14px; width:100%; max-width:460px; max-height:80vh; display:flex; flex-direction:column; margin:1rem; box-shadow:0 12px 40px rgba(0,0,0,0.25); overflow:hidden;">
+    <div id="inviteModal" onclick="closeInviteModal()" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.55); z-index:1100; align-items:center; justify-content:center;">
+        <div onclick="event.stopPropagation()" style="background:var(--bg-card); border-radius:14px; width:100%; max-width:460px; max-height:80vh; display:flex; flex-direction:column; margin:1rem; box-shadow:0 12px 40px rgba(0,0,0,0.25); overflow:hidden;">
             <div style="display:flex; align-items:center; justify-content:space-between; padding:1rem 1.25rem; border-bottom:1px solid var(--border); background:var(--accent); color:white;">
                 <span style="font-family:'Philosopher',sans-serif; font-weight:700; font-size:1.05rem;">📨 Запросити у групу</span>
                 <button onclick="closeInviteModal()" style="background:none;border:none;font-size:1.3rem;cursor:pointer;color:white;opacity:0.85;">✕</button>
@@ -5811,8 +5808,8 @@ function downloadImage(blob, filename) {
     </div>
 
     <!-- Friends Modal -->
-    <div id="friendsModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.55); z-index:1100; align-items:center; justify-content:center;">
-        <div style="background:var(--bg-card); border-radius:14px; width:100%; max-width:460px; max-height:80vh; display:flex; flex-direction:column; margin:1rem; box-shadow:0 12px 40px rgba(0,0,0,0.25); overflow:hidden;">
+    <div id="friendsModal" onclick="closeFriendsModal()" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.55); z-index:1100; align-items:center; justify-content:center;">
+        <div onclick="event.stopPropagation()" style="background:var(--bg-card); border-radius:14px; width:100%; max-width:460px; max-height:80vh; display:flex; flex-direction:column; margin:1rem; box-shadow:0 12px 40px rgba(0,0,0,0.25); overflow:hidden;">
             <div style="display:flex; align-items:center; justify-content:space-between; padding:1rem 1.25rem; border-bottom:1px solid var(--border); background:var(--accent); color:white;">
                 <span style="font-family:'Philosopher',sans-serif; font-weight:700; font-size:1.05rem;">👥 Мої друзі</span>
                 <button onclick="closeFriendsModal()" style="background:none;border:none;font-size:1.3rem;cursor:pointer;color:white;opacity:0.85;">✕</button>
