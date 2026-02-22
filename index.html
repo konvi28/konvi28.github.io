@@ -6,7 +6,7 @@
     <link rel="icon" type="image/webp" href="logo.webp">
     <link rel="shortcut icon" type="image/webp" href="logo.webp">
     <link rel="apple-touch-icon" href="logo.webp">
-    <title>...Спільнота поетів</title>
+    <title>Спільнота поетів</title>
 
     <!-- GitHub Pages SPA: відновлюємо URL після редиректу через 404.html -->
     <script>
@@ -2079,6 +2079,14 @@
                 <div id="adminNewUsersList" style="background: var(--bg-secondary); border-radius: 12px; padding: 1rem; border: 1px solid var(--border-light);">
                     <!-- list injected by JS -->
                 </div>
+            </div>
+
+            <!-- Slug Migration -->
+            <div id="adminSlugMigration" style="margin-top:2.5rem; padding-top:2rem; border-top:2px solid var(--border);">
+                <h3 style="font-family:'Philosopher',sans-serif; color:var(--primary); margin-bottom:0.5rem;">🔗 Міграція SEO slug-урлів</h3>
+                <p style="color:var(--text-light); font-size:0.9rem; margin-bottom:1rem;">Генерує читаємі URL для всіх існуючих користувачів, публікацій і груп. Запускати один раз.</p>
+                <button class="btn btn-primary" onclick="runSlugMigration()" id="slugMigrateBtn">🚀 Запустити міграцію</button>
+                <div id="slugMigrateLog" style="margin-top:1rem; font-family:monospace; font-size:0.8rem; color:var(--text-light); background:var(--bg-secondary); border-radius:8px; padding:1rem; display:none; max-height:300px; overflow-y:auto; white-space:pre-wrap;"></div>
             </div>
 
             <!-- Posts Tab -->
@@ -4711,6 +4719,114 @@
 
             alert(`✅ Акаунт "${userName}" видалено. Постів видалено: ${deleted}`);
             loadAdminUsers();
+        };
+
+
+        // ============================
+        // ===== SLUG MIGRATION =======
+        // ============================
+        window.runSlugMigration = async function() {
+            const btn = document.getElementById('slugMigrateBtn');
+            const log = document.getElementById('slugMigrateLog');
+            btn.disabled = true;
+            btn.textContent = '⏳ Виконується...';
+            log.style.display = 'block';
+            log.textContent = '';
+
+            const addLog = (msg) => { log.textContent += msg + '\n'; log.scrollTop = log.scrollHeight; };
+
+            try {
+                const token = await window.currentUser.getIdToken();
+
+                // ── 1. USERS ──────────────────────────────────────
+                addLog('👥 Завантаження користувачів...');
+                const usersResp = await fetch(`https://poetry-blog-ff72f-default-rtdb.europe-west1.firebasedatabase.app/users.json?auth=${token}`);
+                const users = await usersResp.json();
+                let uCount = 0, uSkip = 0;
+
+                if (users) {
+                    for (const [uid, u] of Object.entries(users)) {
+                        if (u.slug) { uSkip++; continue; }
+                        const base = toSlug(u.name || 'poet');
+                        const slug = await makeUniqueSlug(base, 'slugs/users', uid);
+
+                        // Записуємо slug в юзера
+                        await fetch(`https://poetry-blog-ff72f-default-rtdb.europe-west1.firebasedatabase.app/users/${uid}/slug.json?auth=${token}`, {
+                            method: 'PUT', headers: {'Content-Type':'application/json'},
+                            body: JSON.stringify(slug)
+                        });
+                        // Записуємо індекс
+                        await fetch(`https://poetry-blog-ff72f-default-rtdb.europe-west1.firebasedatabase.app/slugs/users/${slug}.json?auth=${token}`, {
+                            method: 'PUT', headers: {'Content-Type':'application/json'},
+                            body: JSON.stringify(uid)
+                        });
+                        addLog(`  ✓ ${u.name} → /profile/${slug}`);
+                        uCount++;
+                    }
+                }
+                addLog(`👥 Користувачі: ${uCount} оновлено, ${uSkip} вже мали slug\n`);
+
+                // ── 2. POSTS ──────────────────────────────────────
+                addLog('📝 Завантаження публікацій...');
+                const postsResp = await fetch(`https://poetry-blog-ff72f-default-rtdb.europe-west1.firebasedatabase.app/posts.json?auth=${token}`);
+                const posts = await postsResp.json();
+                let pCount = 0, pSkip = 0;
+
+                if (posts) {
+                    for (const [pid, p] of Object.entries(posts)) {
+                        if (p.slug) { pSkip++; continue; }
+                        const base = toSlug(p.title || 'post');
+                        const slug = await makeUniqueSlug(base, 'slugs/posts', pid);
+
+                        await fetch(`https://poetry-blog-ff72f-default-rtdb.europe-west1.firebasedatabase.app/posts/${pid}/slug.json?auth=${token}`, {
+                            method: 'PUT', headers: {'Content-Type':'application/json'},
+                            body: JSON.stringify(slug)
+                        });
+                        await fetch(`https://poetry-blog-ff72f-default-rtdb.europe-west1.firebasedatabase.app/slugs/posts/${slug}.json?auth=${token}`, {
+                            method: 'PUT', headers: {'Content-Type':'application/json'},
+                            body: JSON.stringify(pid)
+                        });
+                        addLog(`  ✓ "${p.title?.substring(0,40)}" → /post/${slug}`);
+                        pCount++;
+                    }
+                }
+                addLog(`📝 Публікації: ${pCount} оновлено, ${pSkip} вже мали slug\n`);
+
+                // ── 3. GROUPS ─────────────────────────────────────
+                addLog('🫂 Завантаження груп...');
+                const groupsResp = await fetch(`https://poetry-blog-ff72f-default-rtdb.europe-west1.firebasedatabase.app/groups.json?auth=${token}`);
+                const groups = await groupsResp.json();
+                let gCount = 0, gSkip = 0;
+
+                if (groups) {
+                    for (const [gid, g] of Object.entries(groups)) {
+                        if (g.slug) { gSkip++; continue; }
+                        const base = toSlug(g.name || 'group');
+                        const slug = await makeUniqueSlug(base, 'slugs/groups', gid);
+
+                        await fetch(`https://poetry-blog-ff72f-default-rtdb.europe-west1.firebasedatabase.app/groups/${gid}/slug.json?auth=${token}`, {
+                            method: 'PUT', headers: {'Content-Type':'application/json'},
+                            body: JSON.stringify(slug)
+                        });
+                        await fetch(`https://poetry-blog-ff72f-default-rtdb.europe-west1.firebasedatabase.app/slugs/groups/${slug}.json?auth=${token}`, {
+                            method: 'PUT', headers: {'Content-Type':'application/json'},
+                            body: JSON.stringify(gid)
+                        });
+                        addLog(`  ✓ "${g.name}" → /group/${slug}`);
+                        gCount++;
+                    }
+                }
+                addLog(`🫂 Групи: ${gCount} оновлено, ${gSkip} вже мали slug\n`);
+
+                addLog('✅ Міграцію завершено!');
+                btn.textContent = '✅ Готово';
+                btn.style.background = 'var(--accent)';
+
+            } catch(e) {
+                addLog('❌ Помилка: ' + e.message);
+                btn.disabled = false;
+                btn.textContent = '🚀 Запустити міграцію';
+            }
         };
 
         function loadThemeCards() {
