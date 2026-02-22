@@ -6,7 +6,7 @@
     <link rel="icon" type="image/webp" href="logo.webp">
     <link rel="shortcut icon" type="image/webp" href="logo.webp">
     <link rel="apple-touch-icon" href="logo.webp">
-    <title>...Спільнота поетів</title>
+    <title>Спільнота поетів</title>
 
     <!-- GitHub Pages SPA: відновлюємо URL після редиректу через 404.html -->
     <script>
@@ -5585,14 +5585,12 @@ function downloadImage(blob, filename) {
             const me = window.currentUser?.uid;
             const groupId = window._repostTargetGroup;
 
-            // Читаємо пост через REST API (SDK заблокований)
-            const token = await window.currentUser.getIdToken();
-            const postResp = await fetch(`https://poetry-blog-ff72f-default-rtdb.europe-west1.firebasedatabase.app/posts/${postId}.json?auth=${token}`);
-            const post = await postResp.json();
+            // Беремо пост з вже завантажених даних (без зайвого fetch)
+            const post = window._repostPosts.find(p => p.id == postId);
             if (!post) { alert('Пост не знайдено'); return; }
 
-            // Записуємо репост через REST API
-            const newPostId = Date.now().toString();
+            const token = await window.currentUser.getIdToken();
+            const newPostId = 'rp' + Date.now();
             await fetch(`https://poetry-blog-ff72f-default-rtdb.europe-west1.firebasedatabase.app/groups/${groupId}/posts/${newPostId}.json?auth=${token}`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
@@ -5602,7 +5600,7 @@ function downloadImage(blob, filename) {
                     content: post.content,
                     hashtags: post.hashtags || '',
                     authorId: me,
-                    originalPostId: postId,
+                    originalPostId: String(postId),
                     date: Date.now()
                 })
             });
