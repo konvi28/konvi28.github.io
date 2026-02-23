@@ -158,5 +158,11 @@ export async function onRequest(context) {
     }
 
     // Для всіх інших — звичайний SPA
-    return next();
+    const indexResponse = await context.env.ASSETS.fetch(
+    new Request(new URL('/index.html', url))
+);
+return new Response(indexResponse.body, {
+    status: 200,
+    headers: indexResponse.headers
+});
 }
