@@ -59,7 +59,6 @@ ${bodyHtml}
 }
 
 async function handlePost(postId) {
-    // Шукаємо пост у Firebase
     const posts = await fetchFirebase('posts');
     if (!posts || !posts[postId]) return null;
 
@@ -96,7 +95,6 @@ async function handleProfile(userId) {
         ? userData.bio.substring(0, 160)
         : `Профіль автора ${userData.name || ''} на платформі KonVi`;
 
-    // Отримуємо пости автора
     const allPosts = await fetchFirebase('posts');
     const userPosts = allPosts
         ? Object.entries(allPosts)
@@ -132,6 +130,11 @@ export async function onRequest(context) {
     const ua = request.headers.get('user-agent') || '';
     const path = url.pathname;
 
+    // Статичні файли — віддаємо як є (без перехоплення)
+    if (path.match(/\.(xml|txt|webp|png|ico|js|css|json)$/)) {
+        return next();
+    }
+
     // Тільки для ботів і тільки для /post/ та /profile/
     if (isBot(ua)) {
         const postMatch = path.match(/^\/post\/([^/]+)$/);
@@ -152,17 +155,16 @@ export async function onRequest(context) {
                 });
             }
         } catch (e) {
-            // Якщо щось пішло не так — віддаємо звичайний index.html
             console.error('Middleware error:', e);
         }
     }
 
-    // Для всіх інших — звичайний SPA
+    // Для всіх інших SPA маршрутів — index.html з 200
     const indexResponse = await context.env.ASSETS.fetch(
-    new Request(new URL('/index.html', url))
-);
-return new Response(indexResponse.body, {
-    status: 200,
-    headers: indexResponse.headers
-});
+        new Request(new URL('/index.html', url))
+    );
+    return new Response(indexResponse.body, {
+        status: 200,
+        headers: indexResponse.headers
+    });
 }
