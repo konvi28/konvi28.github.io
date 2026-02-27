@@ -131,7 +131,7 @@ export async function onRequest(context) {
     const path = url.pathname;
 
     // Статичні файли — віддаємо як є (без перехоплення)
-    if (path.match(/\.(xml|txt|webp|png|ico|js|css|json)$/)) {
+   if (path.match(/\.(xml|txt|webp|png|ico|js|css|json|html)$/)) {
         return next();
     }
 
