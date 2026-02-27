@@ -130,9 +130,21 @@ export async function onRequest(context) {
     const ua = request.headers.get('user-agent') || '';
     const path = url.pathname;
 
+    // Google верифікаційний файл — віддаємо напряму
+    if (path === '/google72d2baebb962c92c' || path === '/google72d2baebb962c92c.html') {
+        return new Response('google-site-verification: google72d2baebb962c92c.html', {
+            headers: { 'Content-Type': 'text/html; charset=utf-8' }
+        });
+    }
+
+    // Сайтмап — віддаємо реальний файл
+    if (path === '/sitemap.xml' || path === '/robots.txt') {
+        return context.env.ASSETS.fetch(request);
+    }
+
     // Статичні файли — віддаємо як є (без перехоплення)
-   if (path.match(/\.(xml|txt|webp|png|ico|js|css|json|html)$/)) {
-        return next();
+    if (path.match(/\.(xml|txt|webp|png|ico|js|css|json)$/)) {
+        return context.env.ASSETS.fetch(request);
     }
 
     // Тільки для ботів і тільки для /post/ та /profile/
